@@ -1,10 +1,18 @@
 import os
-import re
+import time
 import yaml
 from pocketflow import Node, BatchNode
 from salt_docs.utils.crawl_github_files import crawl_github_files
 from salt_docs.utils.call_llm import call_llm
 from salt_docs.utils.crawl_local_files import crawl_local_files
+from salt_docs.formatter.output_formatter import (
+    Icons,
+    print_phase_start,
+    print_operation,
+    print_success,
+    print_phase_end,
+    format_size
+)
 
 
 # Helper to get content for specific file indices
@@ -49,8 +57,10 @@ class FetchRepo(Node):
         }
 
     def exec(self, prep_res):
+        start_time = time.time()
+        
         if prep_res["repo_url"]:
-            print(f"Crawling repository: {prep_res['repo_url']}...")
+            print_phase_start("Repository Crawling", Icons.CRAWLING)
             result = crawl_github_files(
                 repo_url=prep_res["repo_url"],
                 token=prep_res["token"],
@@ -60,8 +70,7 @@ class FetchRepo(Node):
                 use_relative_paths=prep_res["use_relative_paths"],
             )
         else:
-            print(f"Crawling directory: {prep_res['local_dir']}...")
-
+            print_phase_start("Directory Crawling", Icons.CRAWLING)
             result = crawl_local_files(
                 directory=prep_res["local_dir"],
                 include_patterns=prep_res["include_patterns"],
@@ -74,7 +83,18 @@ class FetchRepo(Node):
         files_list = list(result.get("files", {}).items())
         if len(files_list) == 0:
             raise (ValueError("Failed to fetch files"))
-        print(f"Fetched {len(files_list)} files.")
+        
+        # Calculate total size
+        total_size = sum(len(content) for _, content in files_list)
+        elapsed = time.time() - start_time
+        
+        print_success(
+            f"Complete ({len(files_list)} files, {format_size(total_size)})",
+            elapsed,
+            indent=1
+        )
+        print_phase_end()
+        
         return files_list
 
     def post(self, shared, prep_res, exec_res):
@@ -118,6 +138,7 @@ class IdentifyAbstractions(Node):
         )  # Return all parameters
 
     def exec(self, prep_res):
+        start_time = time.time()
         (
             context,
             file_listing_for_prompt,
@@ -127,7 +148,9 @@ class IdentifyAbstractions(Node):
             use_cache,
             max_abstraction_num,
         ) = prep_res  # Unpack all parameters
-        print(f"Identifying abstractions using LLM...")
+        
+        print_phase_start("LLM Analysis", Icons.PROCESSING)
+        print_operation("Identifying abstractions...", Icons.PROCESSING, indent=1)
 
         # Add language instruction and hints only if not English
         language_instruction = ""
@@ -232,7 +255,9 @@ Format the output as a YAML list of dictionaries:
                 }
             )
 
-        print(f"Identified {len(validated_abstractions)} abstractions.")
+        elapsed = time.time() - start_time
+        print_success(f"Found {len(validated_abstractions)} abstractions", elapsed, indent=2)
+        
         return validated_abstractions
 
     def post(self, shared, prep_res, exec_res):
@@ -291,6 +316,7 @@ class AnalyzeRelationships(Node):
         )  # Return use_cache
 
     def exec(self, prep_res):
+        start_time = time.time()
         (
             context,
             abstraction_listing,
@@ -299,7 +325,8 @@ class AnalyzeRelationships(Node):
             language,
             use_cache,
         ) = prep_res  # Unpack use_cache
-        print(f"Analyzing relationships using LLM...")
+        
+        print_operation("Analyzing relationships...", Icons.ANALYZING, indent=1)
 
         # Add language instruction and hints only if not English
         language_instruction = ""
@@ -401,7 +428,9 @@ Now, provide the YAML output:
             except (ValueError, TypeError):
                 raise ValueError(f"Could not parse indices from relationship: {rel}")
 
-        print("Generated project summary and relationship details.")
+        elapsed = time.time() - start_time
+        print_success("Generated project summary", elapsed, indent=2)
+        
         return {
             "summary": relationships_data["summary"],  # Potentially translated summary
             "details": validated_relationships,  # Store validated, index-based relationships with potentially translated labels
@@ -458,6 +487,7 @@ class OrderChapters(Node):
         )  # Return use_cache
 
     def exec(self, prep_res):
+        start_time = time.time()
         (
             abstraction_listing,
             context,
@@ -466,7 +496,8 @@ class OrderChapters(Node):
             list_lang_note,
             use_cache,
         ) = prep_res  # Unpack use_cache
-        print("Determining chapter order using LLM...")
+        
+        print_operation("Determining chapter order...", Icons.ORDERING, indent=1)
         # No language variation needed here in prompt instructions, just ordering based on structure
         # The input names might be translated, hence the note.
         prompt = f"""
@@ -534,7 +565,10 @@ Now, provide the YAML output:
                 f"Ordered list length ({len(ordered_indices)}) does not match number of abstractions ({num_abstractions}). Missing indices: {set(range(num_abstractions)) - seen_indices}"
             )
 
-        print(f"Determined chapter order (indices): {ordered_indices}")
+        elapsed = time.time() - start_time
+        print_success(f"Order determined: {ordered_indices}", elapsed, indent=2)
+        print_phase_end()
+        
         return ordered_indices  # Return the list of indices
 
     def post(self, shared, prep_res, exec_res):
@@ -636,10 +670,11 @@ class WriteChapters(BatchNode):
                     f"Warning: Invalid abstraction index {abstraction_index} in chapter_order. Skipping."
                 )
 
-        print(f"Preparing to write {len(items_to_process)} chapters...")
+        print_phase_start("Content Generation", Icons.WRITING)
         return items_to_process  # Iterable for BatchNode
 
     def exec(self, item):
+        start_time = time.time()
         # This runs for each item prepared above
         abstraction_name = item["abstraction_details"][
             "name"
@@ -651,8 +686,7 @@ class WriteChapters(BatchNode):
         project_name = item.get("project_name")
         language = item.get("language", "english")
         use_cache = item.get("use_cache", True)  # Read use_cache from item
-        print(f"Writing chapter {chapter_num} for: {abstraction_name} using LLM...")
-
+        
         # Prepare file context string from the map
         file_context_str = "\n\n".join(
             f"--- File: {idx_path.split('# ')[1] if '# ' in idx_path else idx_path} ---\n{content}"
@@ -738,6 +772,21 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
         chapter_content = call_llm(
             prompt, use_cache=(use_cache and self.cur_retry == 0)
         )  # Use cache only if enabled and not retrying
+        
+        elapsed = time.time() - start_time
+        
+        # Store timing for later summary
+        if not hasattr(self, 'chapter_times'):
+            self.chapter_times = []
+        self.chapter_times.append(elapsed)
+        
+        # Show the operation with timing
+        print_operation(
+            f"Chapter {chapter_num}: {abstraction_name}",
+            Icons.WRITING,
+            indent=1,
+            elapsed_time=elapsed
+        )
         # Basic validation/cleanup
         actual_heading = f"# Chapter {chapter_num}: {abstraction_name}"  # Use potentially translated name
         if not chapter_content.strip().startswith(f"# Chapter {chapter_num}"):
@@ -759,9 +808,17 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
     def post(self, shared, prep_res, exec_res_list):
         # exec_res_list contains the generated Markdown for each chapter, in order
         shared["chapters"] = exec_res_list
-        # Clean up the temporary instance variable
-        del self.chapters_written_so_far
-        print(f"Finished writing {len(exec_res_list)} chapters.")
+        
+        # Calculate total time
+        total_time = sum(self.chapter_times) if hasattr(self, 'chapter_times') else 0
+        print_success(f"{len(exec_res_list)} chapters written", total_time, indent=1)
+        print_phase_end()
+        
+        # Cleanup
+        if hasattr(self, 'chapter_times'):
+            del self.chapter_times
+        if hasattr(self, 'chapters_written_so_far'):
+            del self.chapters_written_so_far
 
 
 class GenerateDocContent(Node):
@@ -822,6 +879,7 @@ class GenerateDocContent(Node):
         return combined
 
     def exec(self, prep_res):
+        start_time = time.time()
         project_name = prep_res["project_name"]
         output_path = prep_res["output_path"]
         repo_url = prep_res["repo_url"]
@@ -829,6 +887,8 @@ class GenerateDocContent(Node):
         chapter_order = prep_res["chapter_order"]
         abstractions = prep_res["abstractions"]
         chapters_content = prep_res["chapters_content"]
+        
+        print_phase_start("Documentation Assembly", Icons.GENERATING)
 
         # --- Generate Mermaid Diagram ---
         mermaid_lines = ["flowchart TD"]
@@ -908,6 +968,10 @@ class GenerateDocContent(Node):
             project_name, index_content, chapters_content
         )
 
+        elapsed = time.time() - start_time
+        print_success("Generated index and combined files", elapsed, indent=1)
+        print_phase_end()
+
         return {
             "project_name": project_name,
             "output_path": output_path,
@@ -925,13 +989,14 @@ class WriteDocFiles(Node):
         return shared["doc_content"]
 
     def exec(self, doc_content):
+        start_time = time.time()
         project_name = doc_content["project_name"]
         output_path = doc_content["output_path"]
         index_content = doc_content["index_content"]
         chapter_files = doc_content["chapter_files"]
         combined_content = doc_content["combined_content"]
 
-        print(f"Writing documentation files to directory: {output_path}")
+        print_phase_start("Writing Output Files", Icons.CREATING)
         # Rely on Node's built-in retry/fallback
         os.makedirs(output_path, exist_ok=True)
 
@@ -942,7 +1007,7 @@ class WriteDocFiles(Node):
         with open(index_filepath, "w", encoding="utf-8") as f:
             f.write(index_content)
         written_files.append(index_filepath)
-        print(f"  - Wrote {index_filepath}")
+        print_operation(f"{Icons.SUCCESS} index.md", indent=1)
 
         # Write chapter files
         for chapter_info in chapter_files:
@@ -950,19 +1015,20 @@ class WriteDocFiles(Node):
             with open(chapter_filepath, "w", encoding="utf-8") as f:
                 f.write(chapter_info["content"])
             written_files.append(chapter_filepath)
-            print(f"  - Wrote {chapter_filepath}")
+            print_operation(f"{Icons.SUCCESS} {chapter_info['filename']}", indent=1)
 
         # Write combined file
         combined_filepath = os.path.join(output_path, f"{project_name}.md")
         with open(combined_filepath, "w", encoding="utf-8") as f:
             f.write(combined_content)
         written_files.append(combined_filepath)
-        print(f"  - Wrote {combined_filepath}")
+        print_operation(f"{Icons.SUCCESS} {project_name}.md", indent=1)
+
+        elapsed = time.time() - start_time
+        print_success(f"{len(written_files)} files written", elapsed, indent=1)
 
         return output_path  # Return the final path
 
     def post(self, shared, prep_res, exec_res):
         shared["final_output_dir"] = exec_res  # Store the output path
-        print(
-            f"\nDocuments are successfully generated for your project! Files are in: {exec_res}"
-        )
+        # Remove the print statement here - handled by cli.py's final message

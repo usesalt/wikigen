@@ -38,8 +38,8 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
             try:
                 with open(cache_file, "r", encoding="utf-8") as f:
                     cache = json.load(f)
-            except:
-                logger.warning(f"Failed to load cache, starting with empty cache")
+            except Exception as e:
+                logger.warning(f"Failed to load cache, starting with empty cache: {e}")
 
         # Return from cache if exists
         if prompt in cache:
@@ -57,8 +57,9 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
             api_key = os.getenv("GEMINI_API_KEY", "")
 
     if not api_key:
+        from ..metadata import CLI_ENTRY_POINT
         raise ValueError(
-            "GEMINI_API_KEY not found. Please run 'salt-docs init' to configure your API key, "
+            f"GEMINI_API_KEY not found. Please run '{CLI_ENTRY_POINT} init' to configure your API key, "
             "or set the GEMINI_API_KEY environment variable."
         )
 
@@ -80,8 +81,8 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
             try:
                 with open(cache_file, "r", encoding="utf-8") as f:
                     cache = json.load(f)
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to load cache: {e}")
 
         # Add to cache and save
         cache[prompt] = response_text

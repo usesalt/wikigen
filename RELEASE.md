@@ -24,22 +24,7 @@ This document explains how to release new versions of Salt Docs CLI.
 
 ## Release Methods
 
-### Method 1: Using the Release Script (Recommended)
-
-```bash
-# Update version in pyproject.toml first
-# Then run:
-python scripts/release.py 0.1.0
-```
-
-This will:
-- ✓ Check version matches pyproject.toml
-- ✓ Verify you're on main branch
-- ✓ Check working directory is clean
-- ✓ Create and push git tag
-- ✓ Trigger automated release workflow
-
-### Method 2: Manual Git Tag
+### Method 1: Manual Git Tag (Recommended)
 
 ```bash
 # Update version in pyproject.toml
@@ -50,7 +35,7 @@ git push origin main
 git push origin v0.1.0
 ```
 
-### Method 3: GitHub Release
+### Method 2: GitHub Release
 
 1. Go to GitHub repository → Releases
 2. Click "Create a new release"

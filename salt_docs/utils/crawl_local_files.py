@@ -1,6 +1,7 @@
 import os
 import fnmatch
 import pathspec
+from ..formatter.output_formatter import print_operation, Icons, Colors, format_size
 
 
 def crawl_local_files(
@@ -104,25 +105,11 @@ def crawl_local_files(
 
         status = "processed"
         if not included or excluded:
-            status = "skipped (excluded)"
-            # Print progress for skipped files due to exclusion
-            if total_files > 0:
-                percentage = (processed_files / total_files) * 100
-                rounded_percentage = int(percentage)
-                print(
-                    f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m"
-                )
+            print_operation(f"{relpath}", Icons.SKIP, indent=2)
             continue  # Skip to next file if not included or excluded
 
         if max_file_size and os.path.getsize(filepath) > max_file_size:
-            status = "skipped (size limit)"
-            # Print progress for skipped files due to size limit
-            if total_files > 0:
-                percentage = (processed_files / total_files) * 100
-                rounded_percentage = int(percentage)
-                print(
-                    f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m"
-                )
+            print_operation(f"{relpath}", Icons.SKIP, indent=2)
             continue  # Skip large files
 
         # --- File is being processed ---
@@ -130,17 +117,10 @@ def crawl_local_files(
             with open(filepath, "r", encoding="utf-8-sig") as f:
                 content = f.read()
             files_dict[relpath] = content
+            file_size = os.path.getsize(filepath)
+            print_operation(f"{relpath} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
         except Exception as e:
-            print(f"Warning: Could not read file {filepath}: {e}")
-            status = "skipped (read error)"
-
-        # --- Print progress for processed or error files ---
-        if total_files > 0:
-            percentage = (processed_files / total_files) * 100
-            rounded_percentage = int(percentage)
-            print(
-                f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m"
-            )
+            print_operation(f"{relpath}: {e}", Icons.ERROR, indent=2)
 
     return {"files": files_dict}
 

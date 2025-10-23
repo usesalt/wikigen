@@ -7,6 +7,7 @@ import time
 import fnmatch
 from typing import Union, Set, List, Dict, Tuple, Any
 from urllib.parse import urlparse
+from ..formatter.output_formatter import print_operation, Icons, Colors, format_size
 
 
 def crawl_github_files(
@@ -99,16 +100,12 @@ def crawl_github_files(
 
                     if file_size > max_file_size:
                         skipped_files.append((rel_path, file_size))
-                        print(
-                            f"Skipping {rel_path}: size {file_size} exceeds limit {max_file_size}"
-                        )
+                        print_operation(f"{rel_path}", Icons.SKIP, indent=2)
                         continue
 
                     # Check include/exclude patterns
                     if not should_include_file(rel_path, filename):
-                        print(
-                            f"Skipping {rel_path}: does not match include/exclude patterns"
-                        )
+                        print_operation(f"{rel_path}", Icons.SKIP, indent=2)
                         continue
 
                     # Read content
@@ -116,9 +113,9 @@ def crawl_github_files(
                         with open(abs_path, "r", encoding="utf-8-sig") as f:
                             content = f.read()
                         files[rel_path] = content
-                        print(f"Added {rel_path} ({file_size} bytes)")
+                        print_operation(f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
                     except Exception as e:
-                        print(f"Failed to read {rel_path}: {e}")
+                        print_operation(f"{rel_path}: {e}", Icons.ERROR, indent=2)
 
             return {
                 "files": files,
@@ -289,18 +286,14 @@ def crawl_github_files(
             if item["type"] == "file":
                 # Check if file should be included based on patterns
                 if not should_include_file(rel_path, item["name"]):
-                    print(
-                        f"Skipping {rel_path}: Does not match include/exclude patterns"
-                    )
+                    print_operation(f"{rel_path}", Icons.SKIP, indent=2)
                     continue
 
                 # Check file size if available
                 file_size = item.get("size", 0)
                 if file_size > max_file_size:
                     skipped_files.append((item_path, file_size))
-                    print(
-                        f"Skipping {rel_path}: File size ({file_size} bytes) exceeds limit ({max_file_size} bytes)"
-                    )
+                    print_operation(f"{rel_path}", Icons.SKIP, indent=2)
                     continue
 
                 # For files, get raw content
@@ -321,11 +314,9 @@ def crawl_github_files(
 
                     if file_response.status_code == 200:
                         files[rel_path] = file_response.text
-                        print(f"Downloaded: {rel_path} ({file_size} bytes) ")
+                        print_operation(f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
                     else:
-                        print(
-                            f"Failed to download {rel_path}: {file_response.status_code}"
-                        )
+                        print_operation(f"{rel_path}: {file_response.status_code}", Icons.ERROR, indent=2)
                 else:
                     # Alternative method if download_url is not available
                     content_response = requests.get(
@@ -354,13 +345,11 @@ def crawl_github_files(
                                 content_data["content"]
                             ).decode("utf-8")
                             files[rel_path] = file_content
-                            print(f"Downloaded: {rel_path} ({file_size} bytes)")
+                            print_operation(f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
                         else:
-                            print(f"Unexpected content format for {rel_path}")
+                            print_operation(f"{rel_path}: Unexpected content format", Icons.ERROR, indent=2)
                     else:
-                        print(
-                            f"Failed to get content for {rel_path}: {content_response.status_code}"
-                        )
+                        print_operation(f"{rel_path}: {content_response.status_code}", Icons.ERROR, indent=2)
 
             elif item["type"] == "dir":
                 # OLD IMPLEMENTATION (comment this block to test new implementation)

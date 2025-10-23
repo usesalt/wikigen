@@ -2,5 +2,6 @@
 Salt Docs - Wiki for your codebase
 """
 
-__version__ = "0.1.1"
-__author__ = "Mithun Ramesh"
+from .metadata import __version__, AUTHOR_NAME
+
+__author__ = AUTHOR_NAME

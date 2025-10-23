@@ -4,6 +4,7 @@ CLI entry point for Salt Docs.
 
 import sys
 import argparse
+import time
 from pathlib import Path
 
 # Add the parent directory to the path so we can import from the package
@@ -18,6 +19,15 @@ from .config import (
 )
 from .defaults import DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
 from .flows.flow import create_tutorial_flow
+from .formatter.output_formatter import (
+    print_header,
+    print_info,
+    print_final_success,
+    format_time
+)
+from .metadata.logo import print_logo
+from .metadata import PROJECT_NAME, DESCRIPTION, CLI_ENTRY_POINT
+from .formatter.help_formatter import print_enhanced_help
 
 
 def main():
@@ -35,29 +45,25 @@ def main():
     # Check if config exists, if not, prompt user to run init
     if not check_config_exists():
         print("✘ Salt Docs is not configured yet.")
-        print("Please run 'salt-docs init' to set up your configuration first.")
+        print(f"Please run '{CLI_ENTRY_POINT} init' to set up your configuration first.")
         sys.exit(1)
 
     # Load saved configuration
     config = load_config()
 
-    # Parse arguments (existing argparse logic from main.py)
+    # Parse arguments with enhanced help
     parser = argparse.ArgumentParser(
-        description="Generate a tutorial for a GitHub codebase or local directory.",
+        description=DESCRIPTION,
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""Subcommands:
-  init                    - Set up configuration
-  config <command>        - Manage configuration
-
-Examples:
-  salt-docs init
-  salt-docs config show
-  salt-docs config update-gemini-key "your-key"
-  salt-docs --repo https://github.com/user/repo""",
+        add_help=False  # Disable default help to use our custom one
     )
 
+    # Add custom help option
+    parser.add_argument('-h', '--help', action='store_true', 
+                       help='Show enhanced help message and exit')
+
     # Create mutually exclusive group for source
-    source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group = parser.add_mutually_exclusive_group(required=False)
     source_group.add_argument("--repo", help="URL of the public GitHub repository.")
     source_group.add_argument("--dir", help="Path to local directory.")
 
@@ -118,6 +124,17 @@ Examples:
 
     args = parser.parse_args()
 
+    # Handle help display
+    if args.help:
+        print_enhanced_help()
+        sys.exit(0)
+
+    # Validate that either --repo or --dir is provided
+    if not args.repo and not args.dir:
+        print("Error: One of --repo or --dir is required.")
+        print("Use --help for more information.")
+        sys.exit(1)
+
     # Get GitHub token from argument, config, or environment variable
     github_token = None
     if args.repo:
@@ -168,17 +185,28 @@ Examples:
         "final_output_dir": None,
     }
 
-    # Display starting message with repository/directory and language
-    print(
-        f"SALT kicking off the docs generation for: {args.repo or args.dir} in {final_config['language'].capitalize()} language"
-    )
-    print(f"LLM caching: {'Disabled' if not final_config['use_cache'] else 'Enabled'}")
+    # Display logo and starting message with repository/directory and language
+    print_logo()
+    print()  # Blank line for spacing
+    print_header()  # Version will be read from pyproject.toml
+    print_info("Repository", args.repo or args.dir)
+    print_info("Language", final_config['language'].capitalize())
+    print_info("LLM caching", 'Enabled' if final_config['use_cache'] else 'Disabled')
 
     # Create the flow instance
     tutorial_flow = create_tutorial_flow()
 
     # Run the flow
+    start_time = time.time()
     tutorial_flow.run(shared)
+    total_time = time.time() - start_time
+
+    # Print final success message
+    print_final_success(
+        "Success! Documents generated",
+        total_time,
+        shared['final_output_dir']
+    )
 
 
 def handle_config_command():
@@ -232,7 +260,7 @@ def handle_config_command():
 def show_config():
     """Show current configuration."""
     if not check_config_exists():
-        print("✘ No configuration found. Run 'salt-docs init' first.")
+        print(f"✘ No configuration found. Run '{CLI_ENTRY_POINT} init' first.")
         return
 
     config = load_config()
@@ -251,15 +279,15 @@ def show_config():
         github_token = get_github_token()
         print(f"  Gemini API Key: {'✓ Set' if gemini_key else '✘ Not set'}")
         print(f"  GitHub Token: {'✓ Set' if github_token else '✘ Not set'}")
-    except:
-        print("  Gemini API Key:  Unable to check")
-        print("  GitHub Token:  Unable to check")
+    except Exception as e:
+        print(f"  Gemini API Key:  Unable to check ({e})")
+        print(f"  GitHub Token:  Unable to check ({e})")
 
 
 def set_config_value(key, value):
     """Set a configuration value."""
     if not check_config_exists():
-        print("✘ No configuration found. Run 'salt-docs init' first.")
+        print(f"✘ No configuration found. Run '{CLI_ENTRY_POINT} init' first.")
         return
 
     config = load_config()

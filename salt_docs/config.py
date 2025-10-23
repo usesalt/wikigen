@@ -24,21 +24,19 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 DEFAULT_OUTPUT_DIR = Path.home() / "Documents" / "Salt Docs"
 
 
-def get_config_path() -> Path:
-    """Return the path to the configuration file."""
-    return CONFIG_FILE
-
-
 def init_config() -> None:
-    """Interactive setup wizard for salt-docs init command."""
-    print(" Welcome to Salt Docs Setup!\n")
+    """Interactive setup wizard for init command."""
+    from .metadata.logo import print_logo
+    
+    print_logo()
+    print()  # Blank line for spacing
 
     # Create directories
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("This will set up your Salt Docs configuration.")
-    print(f"Configuration will be saved to: {CONFIG_FILE}")
+    print("Welcome to Salt Docs! Let's set up your configuration")
+    print(f"Configuration will be saved to (Default): {CONFIG_FILE}")
     print(f"Default output directory: {DEFAULT_OUTPUT_DIR}\n")
 
     # Collect API keys
