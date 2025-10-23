@@ -861,7 +861,7 @@ class GenerateDocContent(Node):
         # --- End Mermaid ---
 
         # --- Prepare index.md content ---
-        index_content += f"{relationships_data['summary']}\n\n"  # Use the potentially translated summary directly
+        index_content = f"{relationships_data['summary']}\n\n"  # Use the potentially translated summary directly
         # Keep fixed strings in English
         index_content += f"**Source Repository:** [{repo_url}]({repo_url})\n\n"
 
