@@ -11,7 +11,7 @@ from salt_docs.formatter.output_formatter import (
     print_operation,
     print_success,
     print_phase_end,
-    format_size
+    format_size,
 )
 
 
@@ -58,7 +58,7 @@ class FetchRepo(Node):
 
     def exec(self, prep_res):
         start_time = time.time()
-        
+
         if prep_res["repo_url"]:
             print_phase_start("Repository Crawling", Icons.CRAWLING)
             result = crawl_github_files(
@@ -83,18 +83,18 @@ class FetchRepo(Node):
         files_list = list(result.get("files", {}).items())
         if len(files_list) == 0:
             raise (ValueError("Failed to fetch files"))
-        
+
         # Calculate total size
         total_size = sum(len(content) for _, content in files_list)
         elapsed = time.time() - start_time
-        
+
         print_success(
             f"Complete ({len(files_list)} files, {format_size(total_size)})",
             elapsed,
-            indent=1
+            indent=1,
         )
         print_phase_end()
-        
+
         return files_list
 
     def post(self, shared, prep_res, exec_res):
@@ -148,7 +148,7 @@ class IdentifyAbstractions(Node):
             use_cache,
             max_abstraction_num,
         ) = prep_res  # Unpack all parameters
-        
+
         print_phase_start("LLM Analysis", Icons.PROCESSING)
         print_operation("Identifying abstractions...", Icons.PROCESSING, indent=1)
 
@@ -256,8 +256,10 @@ Format the output as a YAML list of dictionaries:
             )
 
         elapsed = time.time() - start_time
-        print_success(f"Found {len(validated_abstractions)} abstractions", elapsed, indent=2)
-        
+        print_success(
+            f"Found {len(validated_abstractions)} abstractions", elapsed, indent=2
+        )
+
         return validated_abstractions
 
     def post(self, shared, prep_res, exec_res):
@@ -325,7 +327,7 @@ class AnalyzeRelationships(Node):
             language,
             use_cache,
         ) = prep_res  # Unpack use_cache
-        
+
         print_operation("Analyzing relationships...", Icons.ANALYZING, indent=1)
 
         # Add language instruction and hints only if not English
@@ -430,7 +432,7 @@ Now, provide the YAML output:
 
         elapsed = time.time() - start_time
         print_success("Generated project summary", elapsed, indent=2)
-        
+
         return {
             "summary": relationships_data["summary"],  # Potentially translated summary
             "details": validated_relationships,  # Store validated, index-based relationships with potentially translated labels
@@ -496,7 +498,7 @@ class OrderChapters(Node):
             list_lang_note,
             use_cache,
         ) = prep_res  # Unpack use_cache
-        
+
         print_operation("Determining chapter order...", Icons.ORDERING, indent=1)
         # No language variation needed here in prompt instructions, just ordering based on structure
         # The input names might be translated, hence the note.
@@ -568,7 +570,7 @@ Now, provide the YAML output:
         elapsed = time.time() - start_time
         print_success(f"Order determined: {ordered_indices}", elapsed, indent=2)
         print_phase_end()
-        
+
         return ordered_indices  # Return the list of indices
 
     def post(self, shared, prep_res, exec_res):
@@ -686,7 +688,7 @@ class WriteChapters(BatchNode):
         project_name = item.get("project_name")
         language = item.get("language", "english")
         use_cache = item.get("use_cache", True)  # Read use_cache from item
-        
+
         # Prepare file context string from the map
         file_context_str = "\n\n".join(
             f"--- File: {idx_path.split('# ')[1] if '# ' in idx_path else idx_path} ---\n{content}"
@@ -772,20 +774,20 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
         chapter_content = call_llm(
             prompt, use_cache=(use_cache and self.cur_retry == 0)
         )  # Use cache only if enabled and not retrying
-        
+
         elapsed = time.time() - start_time
-        
+
         # Store timing for later summary
-        if not hasattr(self, 'chapter_times'):
+        if not hasattr(self, "chapter_times"):
             self.chapter_times = []
         self.chapter_times.append(elapsed)
-        
+
         # Show the operation with timing
         print_operation(
             f"Chapter {chapter_num}: {abstraction_name}",
             Icons.WRITING,
             indent=1,
-            elapsed_time=elapsed
+            elapsed_time=elapsed,
         )
         # Basic validation/cleanup
         actual_heading = f"# Chapter {chapter_num}: {abstraction_name}"  # Use potentially translated name
@@ -808,16 +810,16 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
     def post(self, shared, prep_res, exec_res_list):
         # exec_res_list contains the generated Markdown for each chapter, in order
         shared["chapters"] = exec_res_list
-        
+
         # Calculate total time
-        total_time = sum(self.chapter_times) if hasattr(self, 'chapter_times') else 0
+        total_time = sum(self.chapter_times) if hasattr(self, "chapter_times") else 0
         print_success(f"{len(exec_res_list)} chapters written", total_time, indent=1)
         print_phase_end()
-        
+
         # Cleanup
-        if hasattr(self, 'chapter_times'):
+        if hasattr(self, "chapter_times"):
             del self.chapter_times
-        if hasattr(self, 'chapters_written_so_far'):
+        if hasattr(self, "chapters_written_so_far"):
             del self.chapters_written_so_far
 
 
@@ -887,7 +889,7 @@ class GenerateDocContent(Node):
         chapter_order = prep_res["chapter_order"]
         abstractions = prep_res["abstractions"]
         chapters_content = prep_res["chapters_content"]
-        
+
         print_phase_start("Documentation Assembly", Icons.GENERATING)
 
         # --- Generate Mermaid Diagram ---

@@ -19,11 +19,7 @@ from .config import (
 )
 from .defaults import DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
 from .flows.flow import create_tutorial_flow
-from .formatter.output_formatter import (
-    print_header,
-    print_info,
-    print_final_success
-)
+from .formatter.output_formatter import print_header, print_info, print_final_success
 from .metadata.logo import print_logo
 from .metadata import DESCRIPTION, CLI_ENTRY_POINT
 from .formatter.help_formatter import print_enhanced_help
@@ -44,7 +40,9 @@ def main():
     # Check if config exists, if not, prompt user to run init
     if not check_config_exists():
         print("✘ Salt Docs is not configured yet.")
-        print(f"Please run '{CLI_ENTRY_POINT} init' to set up your configuration first.")
+        print(
+            f"Please run '{CLI_ENTRY_POINT} init' to set up your configuration first."
+        )
         sys.exit(1)
 
     # Load saved configuration
@@ -54,12 +52,13 @@ def main():
     parser = argparse.ArgumentParser(
         description=DESCRIPTION,
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        add_help=False  # Disable default help to use our custom one
+        add_help=False,  # Disable default help to use our custom one
     )
 
     # Add custom help option
-    parser.add_argument('-h', '--help', action='store_true', 
-                       help='Show enhanced help message and exit')
+    parser.add_argument(
+        "-h", "--help", action="store_true", help="Show enhanced help message and exit"
+    )
 
     # Create mutually exclusive group for source
     source_group = parser.add_mutually_exclusive_group(required=False)
@@ -189,8 +188,8 @@ def main():
     print()  # Blank line for spacing
     print_header()  # Version will be read from pyproject.toml
     print_info("Repository", args.repo or args.dir)
-    print_info("Language", final_config['language'].capitalize())
-    print_info("LLM caching", 'Enabled' if final_config['use_cache'] else 'Disabled')
+    print_info("Language", final_config["language"].capitalize())
+    print_info("LLM caching", "Enabled" if final_config["use_cache"] else "Disabled")
 
     # Create the flow instance
     tutorial_flow = create_tutorial_flow()
@@ -202,9 +201,7 @@ def main():
 
     # Print final success message
     print_final_success(
-        "Success! Documents generated",
-        total_time,
-        shared['final_output_dir']
+        "Success! Documents generated", total_time, shared["final_output_dir"]
     )
 
 
@@ -314,6 +311,7 @@ def update_gemini_key():
 
     try:
         import keyring
+
         KEYRING_AVAILABLE = True
     except ImportError:
         KEYRING_AVAILABLE = False
@@ -361,6 +359,7 @@ def update_github_token():
 
     try:
         import keyring
+
         KEYRING_AVAILABLE = True
     except ImportError:
         KEYRING_AVAILABLE = False

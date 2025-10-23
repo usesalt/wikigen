@@ -58,6 +58,7 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
 
     if not api_key:
         from ..metadata import CLI_ENTRY_POINT
+
         raise ValueError(
             f"GEMINI_API_KEY not found. Please run '{CLI_ENTRY_POINT} init' to configure your API key, "
             "or set the GEMINI_API_KEY environment variable."

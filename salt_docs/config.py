@@ -27,7 +27,7 @@ DEFAULT_OUTPUT_DIR = Path.home() / "Documents" / "Salt Docs"
 def init_config() -> None:
     """Interactive setup wizard for init command."""
     from .metadata.logo import print_logo
-    
+
     print_logo()
     print()  # Blank line for spacing
 

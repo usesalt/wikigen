@@ -110,7 +110,11 @@ def crawl_local_files(
                 content = f.read()
             files_dict[relpath] = content
             file_size = os.path.getsize(filepath)
-            print_operation(f"{relpath} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
+            print_operation(
+                f"{relpath} {Colors.DARK_GRAY}({format_size(file_size)})",
+                Icons.DOWNLOAD,
+                indent=2,
+            )
         except Exception as e:
             print_operation(f"{relpath}: {e}", Icons.ERROR, indent=2)
 

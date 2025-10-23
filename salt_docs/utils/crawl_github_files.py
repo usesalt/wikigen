@@ -113,7 +113,11 @@ def crawl_github_files(
                         with open(abs_path, "r", encoding="utf-8-sig") as f:
                             content = f.read()
                         files[rel_path] = content
-                        print_operation(f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
+                        print_operation(
+                            f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})",
+                            Icons.DOWNLOAD,
+                            indent=2,
+                        )
                     except Exception as e:
                         print_operation(f"{rel_path}: {e}", Icons.ERROR, indent=2)
 
@@ -183,6 +187,7 @@ def crawl_github_files(
 
     # Check if URL contains a specific branch/commit
     if len(path_parts) > 2 and "tree" == path_parts[2]:
+
         def join_parts(i):
             return "/".join(path_parts[i:])
 
@@ -315,9 +320,17 @@ def crawl_github_files(
 
                     if file_response.status_code == 200:
                         files[rel_path] = file_response.text
-                        print_operation(f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
+                        print_operation(
+                            f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})",
+                            Icons.DOWNLOAD,
+                            indent=2,
+                        )
                     else:
-                        print_operation(f"{rel_path}: {file_response.status_code}", Icons.ERROR, indent=2)
+                        print_operation(
+                            f"{rel_path}: {file_response.status_code}",
+                            Icons.ERROR,
+                            indent=2,
+                        )
                 else:
                     # Alternative method if download_url is not available
                     content_response = requests.get(
@@ -346,11 +359,23 @@ def crawl_github_files(
                                 content_data["content"]
                             ).decode("utf-8")
                             files[rel_path] = file_content
-                            print_operation(f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})", Icons.DOWNLOAD, indent=2)
+                            print_operation(
+                                f"{rel_path} {Colors.DARK_GRAY}({format_size(file_size)})",
+                                Icons.DOWNLOAD,
+                                indent=2,
+                            )
                         else:
-                            print_operation(f"{rel_path}: Unexpected content format", Icons.ERROR, indent=2)
+                            print_operation(
+                                f"{rel_path}: Unexpected content format",
+                                Icons.ERROR,
+                                indent=2,
+                            )
                     else:
-                        print_operation(f"{rel_path}: {content_response.status_code}", Icons.ERROR, indent=2)
+                        print_operation(
+                            f"{rel_path}: {content_response.status_code}",
+                            Icons.ERROR,
+                            indent=2,
+                        )
 
             elif item["type"] == "dir":
                 # OLD IMPLEMENTATION (comment this block to test new implementation)

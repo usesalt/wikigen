@@ -21,7 +21,7 @@ from .version import get_version, __version__
 # Re-export commonly used items
 __all__ = [
     "PROJECT_NAME",
-    "AUTHOR_NAME", 
+    "AUTHOR_NAME",
     "ORGANIZATION",
     "DESCRIPTION",
     "REPOSITORY_URL",
