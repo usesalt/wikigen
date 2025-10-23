@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="salt-docs",
-    version="0.1.2",
+    version="0.1.1",
     author="Mithun Ramesh",
     description="Intelligent codebase analysis and documentation generation tool",
     long_description=long_description,
