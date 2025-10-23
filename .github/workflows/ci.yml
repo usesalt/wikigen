@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.12, 3.13]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov flake8 black
+    
+    - name: Lint with flake8
+      run: |
+        flake8 salt_docs --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 salt_docs --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Format check with black
+      run: |
+        black --check salt_docs
+    
+    - name: Test with pytest
+      run: |
+        pytest --cov=salt_docs --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Build package
+      run: |
+        python -m build
+    
+    - name: Check package
+      run: |
+        twine check dist/*

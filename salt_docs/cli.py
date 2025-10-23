@@ -9,7 +9,13 @@ from pathlib import Path
 # Add the parent directory to the path so we can import from the package
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from .config import init_config, load_config, merge_config_with_args, check_config_exists, save_config
+from .config import (
+    init_config,
+    load_config,
+    merge_config_with_args,
+    check_config_exists,
+    save_config,
+)
 from .defaults import DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
 from .flows.flow import create_tutorial_flow
 
@@ -17,24 +23,24 @@ from .flows.flow import create_tutorial_flow
 def main():
     """Main CLI entry point."""
     # Handle 'init' subcommand
-    if len(sys.argv) > 1 and sys.argv[1] == 'init':
+    if len(sys.argv) > 1 and sys.argv[1] == "init":
         init_config()
         return
-    
+
     # Handle 'config' subcommand
-    if len(sys.argv) > 1 and sys.argv[1] == 'config':
+    if len(sys.argv) > 1 and sys.argv[1] == "config":
         handle_config_command()
         return
-    
+
     # Check if config exists, if not, prompt user to run init
     if not check_config_exists():
-        print("❌ Salt Docs is not configured yet.")
+        print("✘ Salt Docs is not configured yet.")
         print("Please run 'salt-docs init' to set up your configuration first.")
         sys.exit(1)
-    
+
     # Load saved configuration
     config = load_config()
-    
+
     # Parse arguments (existing argparse logic from main.py)
     parser = argparse.ArgumentParser(
         description="Generate a tutorial for a GitHub codebase or local directory.",
@@ -47,7 +53,7 @@ Examples:
   salt-docs init
   salt-docs config show
   salt-docs config update-gemini-key "your-key"
-  salt-docs --repo https://github.com/user/repo"""
+  salt-docs --repo https://github.com/user/repo""",
     )
 
     # Create mutually exclusive group for source
@@ -55,27 +61,73 @@ Examples:
     source_group.add_argument("--repo", help="URL of the public GitHub repository.")
     source_group.add_argument("--dir", help="Path to local directory.")
 
-    parser.add_argument("-n", "--name", help="Project name (optional, derived from repo/directory if omitted).")
-    parser.add_argument("-t", "--token", help="GitHub personal access token (optional, reads from GITHUB_TOKEN env var if not provided).")
-    parser.add_argument("-o", "--output", default=config.get("output_dir", "output"), help="Base directory for output (default: from config).")
-    parser.add_argument("-i", "--include", nargs="+", help="Include file patterns (e.g. '*.py' '*.js'). Defaults to common code files if not specified.")
-    parser.add_argument("-e", "--exclude", nargs="+", help="Exclude file patterns (e.g. 'tests/*' 'docs/*'). Defaults to test/build directories if not specified.")
-    parser.add_argument("-s", "--max-size", type=int, default=config.get("max_file_size", 100000), help="Maximum file size in bytes (default: from config).")
+    parser.add_argument(
+        "-n",
+        "--name",
+        help="Project name (optional, derived from repo/directory if omitted).",
+    )
+    parser.add_argument(
+        "-t",
+        "--token",
+        help="GitHub personal access token (optional, reads from GITHUB_TOKEN env var if not provided).",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default=config.get("output_dir", "output"),
+        help="Base directory for output (default: from config).",
+    )
+    parser.add_argument(
+        "-i",
+        "--include",
+        nargs="+",
+        help="Include file patterns (e.g. '*.py' '*.js'). Defaults to common code files if not specified.",
+    )
+    parser.add_argument(
+        "-e",
+        "--exclude",
+        nargs="+",
+        help="Exclude file patterns (e.g. 'tests/*' 'docs/*'). Defaults to test/build directories if not specified.",
+    )
+    parser.add_argument(
+        "-s",
+        "--max-size",
+        type=int,
+        default=config.get("max_file_size", 100000),
+        help="Maximum file size in bytes (default: from config).",
+    )
     # Add language parameter for multi-language support
-    parser.add_argument("--language", default=config.get("language", "english"), help="Language for the generated tutorial (default: from config)")
+    parser.add_argument(
+        "--language",
+        default=config.get("language", "english"),
+        help="Language for the generated tutorial (default: from config)",
+    )
     # Add use_cache parameter to control LLM caching
-    parser.add_argument("--no-cache", action="store_true", help="Disable LLM response caching (default: caching enabled)")
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable LLM response caching (default: caching enabled)",
+    )
     # Add max_abstraction_num parameter to control the number of abstractions
-    parser.add_argument("--max-abstractions", type=int, default=config.get("max_abstractions", 10), help="Maximum number of abstractions to identify (default: from config)")
+    parser.add_argument(
+        "--max-abstractions",
+        type=int,
+        default=config.get("max_abstractions", 10),
+        help="Maximum number of abstractions to identify (default: from config)",
+    )
 
     args = parser.parse_args()
 
     # Get GitHub token from argument, config, or environment variable
     github_token = None
     if args.repo:
-        github_token = args.token or config.get("github_token") or sys.environ.get('GITHUB_TOKEN')
+        github_token = (
+            args.token or config.get("github_token") or sys.environ.get("GITHUB_TOKEN")
+        )
         if not github_token:
-            print("Warning: No GitHub token provided. You might hit rate limits for public repositories.")
+            print(
+                "Warning: No GitHub token provided. You might hit rate limits for public repositories."
+            )
 
     # Merge config with CLI args (CLI takes precedence)
     final_config = merge_config_with_args(config, args)
@@ -84,35 +136,42 @@ Examples:
     shared = {
         "repo_url": args.repo,
         "local_dir": args.dir,
-        "project_name": args.name, # Can be None, FetchRepo will derive it
+        "project_name": args.name,  # Can be None, FetchRepo will derive it
         "github_token": github_token,
-        "output_dir": final_config["output_dir"], # Base directory for CombineTutorial output
-
+        "output_dir": final_config[
+            "output_dir"
+        ],  # Base directory for CombineTutorial output
         # Add include/exclude patterns and max file size
-        "include_patterns": set(final_config["include_patterns"]) if final_config.get("include_patterns") else DEFAULT_INCLUDE_PATTERNS,
-        "exclude_patterns": set(final_config["exclude_patterns"]) if final_config.get("exclude_patterns") else DEFAULT_EXCLUDE_PATTERNS,
+        "include_patterns": (
+            set(final_config["include_patterns"])
+            if final_config.get("include_patterns")
+            else DEFAULT_INCLUDE_PATTERNS
+        ),
+        "exclude_patterns": (
+            set(final_config["exclude_patterns"])
+            if final_config.get("exclude_patterns")
+            else DEFAULT_EXCLUDE_PATTERNS
+        ),
         "max_file_size": final_config["max_file_size"],
-
         # Add language for multi-language support
         "language": final_config["language"],
-        
         # Add use_cache flag (inverse of no-cache flag)
         "use_cache": final_config["use_cache"],
-        
         # Add max_abstraction_num parameter
         "max_abstraction_num": final_config["max_abstractions"],
-
         # Outputs will be populated by the nodes
         "files": [],
         "abstractions": [],
         "relationships": {},
         "chapter_order": [],
         "chapters": [],
-        "final_output_dir": None
+        "final_output_dir": None,
     }
 
     # Display starting message with repository/directory and language
-    print(f"SALT kicking off the docs generation for: {args.repo or args.dir} in {final_config['language'].capitalize()} language")
+    print(
+        f"SALT kicking off the docs generation for: {args.repo or args.dir} in {final_config['language'].capitalize()} language"
+    )
     print(f"LLM caching: {'Disabled' if not final_config['use_cache'] else 'Enabled'}")
 
     # Create the flow instance
@@ -129,12 +188,16 @@ def handle_config_command():
         print("Commands:")
         print("  show                    - Show current configuration")
         print("  set <key> <value>       - Set a configuration value")
-        print("  update-gemini-key [key] - Update Gemini API key (interactive if no key provided)")
-        print("  update-github-token [token] - Update GitHub token (interactive if no token provided)")
+        print(
+            "  update-gemini-key [key] - Update Gemini API key (interactive if no key provided)"
+        )
+        print(
+            "  update-github-token [token] - Update GitHub token (interactive if no token provided)"
+        )
         return
-    
+
     command = sys.argv[2]
-    
+
     if command == "show":
         show_config()
     elif command == "set":
@@ -169,49 +232,50 @@ def handle_config_command():
 def show_config():
     """Show current configuration."""
     if not check_config_exists():
-        print("❌ No configuration found. Run 'salt-docs init' first.")
+        print("✘ No configuration found. Run 'salt-docs init' first.")
         return
-    
+
     config = load_config()
-    print("📋 Current Salt Docs Configuration:")
+    print(" Current Salt Docs Configuration:")
     print(f"  Output Directory: {config.get('output_dir', 'Not set')}")
     print(f"  Language: {config.get('language', 'Not set')}")
     print(f"  Max Abstractions: {config.get('max_abstractions', 'Not set')}")
     print(f"  Max File Size: {config.get('max_file_size', 'Not set')}")
     print(f"  Use Cache: {config.get('use_cache', 'Not set')}")
-    
+
     # Check if API keys are available
     try:
         from .config import get_api_key, get_github_token
+
         gemini_key = get_api_key()
         github_token = get_github_token()
-        print(f"  Gemini API Key: {'✓ Set' if gemini_key else '❌ Not set'}")
-        print(f"  GitHub Token: {'✓ Set' if github_token else '❌ Not set'}")
+        print(f"  Gemini API Key: {'✓ Set' if gemini_key else '✘ Not set'}")
+        print(f"  GitHub Token: {'✓ Set' if github_token else '✘ Not set'}")
     except:
-        print("  Gemini API Key: ❓ Unable to check")
-        print("  GitHub Token: ❓ Unable to check")
+        print("  Gemini API Key:  Unable to check")
+        print("  GitHub Token:  Unable to check")
 
 
 def set_config_value(key, value):
     """Set a configuration value."""
     if not check_config_exists():
-        print("❌ No configuration found. Run 'salt-docs init' first.")
+        print("✘ No configuration found. Run 'salt-docs init' first.")
         return
-    
+
     config = load_config()
-    
+
     # Handle different value types
-    if key in ['max_abstractions', 'max_file_size']:
+    if key in ["max_abstractions", "max_file_size"]:
         try:
             value = int(value)
         except ValueError:
-            print(f"❌ {key} must be a number")
+            print(f"✘ {key} must be a number")
             return
-    elif key == 'use_cache':
-        value = value.lower() in ['true', '1', 'yes', 'on']
-    elif key in ['include_patterns', 'exclude_patterns']:
-        value = [pattern.strip() for pattern in value.split(',')]
-    
+    elif key == "use_cache":
+        value = value.lower() in ["true", "1", "yes", "on"]
+    elif key in ["include_patterns", "exclude_patterns"]:
+        value = [pattern.strip() for pattern in value.split(",")]
+
     config[key] = value
     save_config(config)
     print(f"✓ Updated {key} to {value}")
@@ -220,19 +284,21 @@ def set_config_value(key, value):
 def update_gemini_key():
     """Update Gemini API key (interactive)."""
     import getpass
+
     try:
         import keyring
+
         KEYRING_AVAILABLE = True
     except ImportError:
         KEYRING_AVAILABLE = False
-    
-    print("🔑 Update Gemini API Key")
+
+    print(" Update Gemini API Key")
     new_key = getpass.getpass("Enter new Gemini API key: ").strip()
-    
+
     if not new_key:
-        print("❌ API key cannot be empty")
+        print("✘ API key cannot be empty")
         return
-    
+
     update_gemini_key_direct(new_key)
 
 
@@ -240,20 +306,21 @@ def update_gemini_key_direct(new_key):
     """Update Gemini API key directly."""
     try:
         import keyring
+
         KEYRING_AVAILABLE = True
     except ImportError:
         KEYRING_AVAILABLE = False
-    
+
     if not new_key:
-        print("❌ API key cannot be empty")
+        print("✘ API key cannot be empty")
         return
-    
+
     if KEYRING_AVAILABLE:
         try:
             keyring.set_password("salt-docs", "gemini_api_key", new_key)
             print("✓ Gemini API key updated securely in keyring")
         except Exception as e:
-            print(f"❌ Failed to update keyring: {e}")
+            print(f"✘ Failed to update keyring: {e}")
     else:
         print("⚠ Keyring not available, updating config file (less secure)")
         config = load_config()
@@ -265,15 +332,19 @@ def update_gemini_key_direct(new_key):
 def update_github_token():
     """Update GitHub token (interactive)."""
     import getpass
+
     try:
         import keyring
+
         KEYRING_AVAILABLE = True
     except ImportError:
         KEYRING_AVAILABLE = False
-    
-    print("🔑 Update GitHub Token")
-    new_token = getpass.getpass("Enter new GitHub token (or press Enter to remove): ").strip()
-    
+
+    print("+ Update GitHub Token")
+    new_token = getpass.getpass(
+        "Enter new GitHub token (or press Enter to remove): "
+    ).strip()
+
     update_github_token_direct(new_token)
 
 
@@ -281,10 +352,11 @@ def update_github_token_direct(new_token):
     """Update GitHub token directly."""
     try:
         import keyring
+
         KEYRING_AVAILABLE = True
     except ImportError:
         KEYRING_AVAILABLE = False
-    
+
     if KEYRING_AVAILABLE:
         try:
             if new_token:
@@ -294,7 +366,7 @@ def update_github_token_direct(new_token):
                 keyring.delete_password("salt-docs", "github_token")
                 print("✓ GitHub token removed from keyring")
         except Exception as e:
-            print(f"❌ Failed to update keyring: {e}")
+            print(f"✘ Failed to update keyring: {e}")
     else:
         print("⚠ Keyring not available, updating config file (less secure)")
         config = load_config()

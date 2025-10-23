@@ -4,14 +4,35 @@ Default configuration values for Salt Docs.
 
 # Default file patterns for inclusion
 DEFAULT_INCLUDE_PATTERNS = {
-    "*.py", "*.js", "*.jsx", "*.ts", "*.tsx", "*.go", "*.java", "*.pyi", "*.pyx",
-    "*.c", "*.cc", "*.cpp", "*.h", "*.md", "*.rst", "*Dockerfile",
-    "*Makefile", "*.yaml", "*.yml",
+    "*.py",
+    "*.js",
+    "*.jsx",
+    "*.ts",
+    "*.tsx",
+    "*.go",
+    "*.java",
+    "*.pyi",
+    "*.pyx",
+    "*.c",
+    "*.cc",
+    "*.cpp",
+    "*.h",
+    "*.md",
+    "*.rst",
+    "*Dockerfile",
+    "*Makefile",
+    "*.yaml",
+    "*.yml",
 }
 
 # Default file patterns for exclusion
 DEFAULT_EXCLUDE_PATTERNS = {
-    "assets/*", "data/*", "images/*", "public/*", "static/*", "temp/*",
+    "assets/*",
+    "data/*",
+    "images/*",
+    "public/*",
+    "static/*",
+    "temp/*",
     "*docs/*",
     "*venv/*",
     "*.venv/*",
@@ -25,11 +46,14 @@ DEFAULT_EXCLUDE_PATTERNS = {
     "*deprecated/*",
     "*misc/*",
     "*legacy/*",
-    ".git/*", ".github/*", ".next/*", ".vscode/*",
+    ".git/*",
+    ".github/*",
+    ".next/*",
+    ".vscode/*",
     "*obj/*",
     "*bin/*",
     "*node_modules/*",
-    "*.log"
+    "*.log",
 }
 
 # Default configuration values

@@ -67,7 +67,7 @@ class FetchRepo(Node):
                 include_patterns=prep_res["include_patterns"],
                 exclude_patterns=prep_res["exclude_patterns"],
                 max_file_size=prep_res["max_file_size"],
-                use_relative_paths=prep_res["use_relative_paths"]
+                use_relative_paths=prep_res["use_relative_paths"],
             )
 
         # Convert dict to list of tuples: [(path, content), ...]
@@ -87,7 +87,9 @@ class IdentifyAbstractions(Node):
         project_name = shared["project_name"]  # Get project name
         language = shared.get("language", "english")  # Get language
         use_cache = shared.get("use_cache", True)  # Get use_cache flag, default to True
-        max_abstraction_num = shared.get("max_abstraction_num", 10)  # Get max_abstraction_num, default to 10
+        max_abstraction_num = shared.get(
+            "max_abstraction_num", 10
+        )  # Get max_abstraction_num, default to 10
 
         # Helper to create context from files, respecting limits (basic example)
         def create_llm_context(files_data):
@@ -173,7 +175,9 @@ Format the output as a YAML list of dictionaries:
     - 5 # path/to/another.js
 # ... up to {max_abstraction_num} abstractions
 ```"""
-        response = call_llm(prompt, use_cache=(use_cache and self.cur_retry == 0))  # Use cache only if enabled and not retrying
+        response = call_llm(
+            prompt, use_cache=(use_cache and self.cur_retry == 0)
+        )  # Use cache only if enabled and not retrying
 
         # --- Validation ---
         yaml_str = response.strip().split("```yaml")[1].split("```")[0].strip()
@@ -280,7 +284,7 @@ class AnalyzeRelationships(Node):
         return (
             context,
             "\n".join(abstraction_info_for_prompt),
-            num_abstractions, # Pass the actual count
+            num_abstractions,  # Pass the actual count
             project_name,
             language,
             use_cache,
@@ -290,11 +294,11 @@ class AnalyzeRelationships(Node):
         (
             context,
             abstraction_listing,
-            num_abstractions, # Receive the actual count
+            num_abstractions,  # Receive the actual count
             project_name,
             language,
             use_cache,
-         ) = prep_res  # Unpack use_cache
+        ) = prep_res  # Unpack use_cache
         print(f"Analyzing relationships using LLM...")
 
         # Add language instruction and hints only if not English
@@ -344,7 +348,9 @@ relationships:
 
 Now, provide the YAML output:
 """
-        response = call_llm(prompt, use_cache=(use_cache and self.cur_retry == 0)) # Use cache only if enabled and not retrying
+        response = call_llm(
+            prompt, use_cache=(use_cache and self.cur_retry == 0)
+        )  # Use cache only if enabled and not retrying
 
         # --- Validation ---
         yaml_str = response.strip().split("```yaml")[1].split("```")[0].strip()
@@ -486,7 +492,9 @@ Output the ordered list of abstraction indices, including the name in a comment 
 
 Now, provide the YAML output:
 """
-        response = call_llm(prompt, use_cache=(use_cache and self.cur_retry == 0)) # Use cache only if enabled and not retrying
+        response = call_llm(
+            prompt, use_cache=(use_cache and self.cur_retry == 0)
+        )  # Use cache only if enabled and not retrying
 
         # --- Validation ---
         yaml_str = response.strip().split("```yaml")[1].split("```")[0].strip()
@@ -568,8 +576,10 @@ class WriteChapters(BatchNode):
                 filename = f"{i+1:02d}_{safe_name}.md"
                 # Format with link (using potentially translated name)
                 # Strip newlines from chapter name to prevent broken markdown links
-                clean_chapter_name = chapter_name.replace('\n', ' ').strip()
-                all_chapters.append(f"{chapter_num}. [{clean_chapter_name}]({filename})")
+                clean_chapter_name = chapter_name.replace("\n", " ").strip()
+                all_chapters.append(
+                    f"{chapter_num}. [{clean_chapter_name}]({filename})"
+                )
                 # Store mapping of chapter index to filename for linking
                 chapter_filenames[abstraction_index] = {
                     "num": chapter_num,
@@ -617,7 +627,7 @@ class WriteChapters(BatchNode):
                         "prev_chapter": prev_chapter,  # Add previous chapter info (uses potentially translated name)
                         "next_chapter": next_chapter,  # Add next chapter info (uses potentially translated name)
                         "language": language,  # Add language for multi-language support
-                        "use_cache": use_cache, # Pass use_cache flag
+                        "use_cache": use_cache,  # Pass use_cache flag
                         # previous_chapters_summary will be added dynamically in exec
                     }
                 )
@@ -640,7 +650,7 @@ class WriteChapters(BatchNode):
         chapter_num = item["chapter_num"]
         project_name = item.get("project_name")
         language = item.get("language", "english")
-        use_cache = item.get("use_cache", True) # Read use_cache from item
+        use_cache = item.get("use_cache", True)  # Read use_cache from item
         print(f"Writing chapter {chapter_num} for: {abstraction_name} using LLM...")
 
         # Prepare file context string from the map
@@ -725,7 +735,9 @@ Instructions for the chapter (Generate content in {language.capitalize()} unless
 
 Now, directly provide a super beginner-friendly Markdown output (DON'T need ```markdown``` tags):
 """
-        chapter_content = call_llm(prompt, use_cache=(use_cache and self.cur_retry == 0)) # Use cache only if enabled and not retrying
+        chapter_content = call_llm(
+            prompt, use_cache=(use_cache and self.cur_retry == 0)
+        )  # Use cache only if enabled and not retrying
         # Basic validation/cleanup
         actual_heading = f"# Chapter {chapter_num}: {abstraction_name}"  # Use potentially translated name
         if not chapter_content.strip().startswith(f"# Chapter {chapter_num}"):
@@ -783,27 +795,30 @@ class GenerateDocContent(Node):
 
     def _generate_combined_content(self, project_name, index_content, chapters_content):
         """Generate the combined documentation file content."""
-        from salt_docs.utils.adjust_headings import adjust_heading_levels, strip_attribution_footer
-        
+        from salt_docs.utils.adjust_headings import (
+            adjust_heading_levels,
+            strip_attribution_footer,
+        )
+
         # Start with H1 repo name
         combined = f"# {project_name}\n\n"
-        
+
         # Add index content without attribution footer
         index_without_attribution = strip_attribution_footer(index_content)
         combined += index_without_attribution
-        
+
         # Add separator
         combined += "\n\n---\n\n"
-        
+
         # Add each chapter with headings shifted down one level
         for i, chapter_content in enumerate(chapters_content):
             adjusted_chapter = adjust_heading_levels(chapter_content, shift=1)
             combined += adjusted_chapter
-            
+
             # Add separator between chapters (except for the last one)
             if i < len(chapters_content) - 1:
                 combined += "\n\n---\n\n"
-        
+
         return combined
 
     def exec(self, prep_res):
@@ -822,7 +837,7 @@ class GenerateDocContent(Node):
             node_id = f"A{i}"
             # Use potentially translated name, sanitize for Mermaid ID and label
             # Remove quotes and line breaks to avoid Mermaid syntax issues
-            sanitized_name = abstr["name"].replace('"', "").replace('\n', ' ').strip()
+            sanitized_name = abstr["name"].replace('"', "").replace("\n", " ").strip()
             node_label = sanitized_name
             mermaid_lines.append(
                 f'    {node_id}["{node_label}"]'
@@ -846,7 +861,6 @@ class GenerateDocContent(Node):
         # --- End Mermaid ---
 
         # --- Prepare index.md content ---
-        index_content = f"# Project: {project_name}\n\n"
         index_content += f"{relationships_data['summary']}\n\n"  # Use the potentially translated summary directly
         # Keep fixed strings in English
         index_content += f"**Source Repository:** [{repo_url}]({repo_url})\n\n"
@@ -873,7 +887,7 @@ class GenerateDocContent(Node):
                 ).lower()
                 filename = f"{i+1:02d}_{safe_name}.md"
                 # Strip newlines from chapter name to prevent broken markdown links
-                clean_abstraction_name = abstraction_name.replace('\n', ' ').strip()
+                clean_abstraction_name = abstraction_name.replace("\n", " ").strip()
                 index_content += f"{i+1}. [{clean_abstraction_name}]({filename})\n"  # Use potentially translated name in link text
 
                 # Chapter content without attribution footer
@@ -890,7 +904,9 @@ class GenerateDocContent(Node):
         index_content += f"\n\n---\n\nGenerated by [SALT](https://usesalt.co)"
 
         # Generate combined content
-        combined_content = self._generate_combined_content(project_name, index_content, chapters_content)
+        combined_content = self._generate_combined_content(
+            project_name, index_content, chapters_content
+        )
 
         return {
             "project_name": project_name,
@@ -947,4 +963,6 @@ class WriteDocFiles(Node):
 
     def post(self, shared, prep_res, exec_res):
         shared["final_output_dir"] = exec_res  # Store the output path
-        print(f"\nDocuments are successfully generated for your project! Files are in: {exec_res}")
+        print(
+            f"\nDocuments are successfully generated for your project! Files are in: {exec_res}"
+        )

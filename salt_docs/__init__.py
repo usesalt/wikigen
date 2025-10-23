@@ -1,6 +1,6 @@
 """
-Salt Docs - AI-powered tool that analyzes codebases and generates beginner-friendly documentation.
+Salt Docs - Wiki for your codebase
 """
 
 __version__ = "0.1.0"
-__author__ = "Salt Docs Team"
+__author__ = "Mithun Ramesh"

@@ -15,7 +15,7 @@ log_file = os.path.join(
 logger = logging.getLogger("llm_logger")
 logger.setLevel(logging.INFO)
 logger.propagate = False  # Prevent propagation to root logger
-file_handler = logging.FileHandler(log_file, encoding='utf-8')
+file_handler = logging.FileHandler(log_file, encoding="utf-8")
 file_handler.setFormatter(
     logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 )
@@ -50,11 +50,12 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
     if not api_key:
         try:
             from ..config import get_api_key
+
             api_key = get_api_key()
         except ImportError:
             # Fallback to environment variable if config module not available
             api_key = os.getenv("GEMINI_API_KEY", "")
-    
+
     if not api_key:
         raise ValueError(
             "GEMINI_API_KEY not found. Please run 'salt-docs init' to configure your API key, "
@@ -64,7 +65,7 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
     # Call the LLM
     client = genai.Client(api_key=api_key)
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-    
+
     response = client.models.generate_content(model=model, contents=[prompt])
     response_text = response.text
 
@@ -178,7 +179,7 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
 #     # OpenRouter API configuration
 #     api_key = os.getenv("OPENROUTER_API_KEY", "")
 #     model = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-exp:free")
-    
+
 #     headers = {
 #         "Authorization": f"Bearer {api_key}",
 #     }
@@ -202,9 +203,9 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
 #         response_text = response.json()["choices"][0]["message"]["content"]
 #     except Exception as e:
 #         error_msg = f"Failed to parse OpenRouter response: {e}; Response: {response.text}"
-#         logger.error(error_msg)        
+#         logger.error(error_msg)
 #         raise Exception(error_msg)
-    
+
 
 #     # Log the response
 #     logger.info(f"RESPONSE: {response_text}")

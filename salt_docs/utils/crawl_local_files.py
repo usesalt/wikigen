@@ -34,10 +34,14 @@ def crawl_local_files(
         try:
             with open(gitignore_path, "r", encoding="utf-8-sig") as f:
                 gitignore_patterns = f.readlines()
-            gitignore_spec = pathspec.PathSpec.from_lines("gitwildmatch", gitignore_patterns)
+            gitignore_spec = pathspec.PathSpec.from_lines(
+                "gitwildmatch", gitignore_patterns
+            )
             print(f"Loaded .gitignore patterns from {gitignore_path}")
         except Exception as e:
-            print(f"Warning: Could not read or parse .gitignore file {gitignore_path}: {e}")
+            print(
+                f"Warning: Could not read or parse .gitignore file {gitignore_path}: {e}"
+            )
 
     all_files = []
     for root, dirs, files in os.walk(directory):
@@ -52,7 +56,9 @@ def crawl_local_files(
 
             if exclude_patterns:
                 for pattern in exclude_patterns:
-                    if fnmatch.fnmatch(dirpath_rel, pattern) or fnmatch.fnmatch(d, pattern):
+                    if fnmatch.fnmatch(dirpath_rel, pattern) or fnmatch.fnmatch(
+                        d, pattern
+                    ):
                         excluded_dirs.add(d)
                         break
 
@@ -68,7 +74,9 @@ def crawl_local_files(
     processed_files = 0
 
     for filepath in all_files:
-        relpath = os.path.relpath(filepath, directory) if use_relative_paths else filepath
+        relpath = (
+            os.path.relpath(filepath, directory) if use_relative_paths else filepath
+        )
 
         # --- Exclusion check ---
         excluded = False
@@ -90,7 +98,9 @@ def crawl_local_files(
         else:
             included = True
 
-        processed_files += 1 # Increment processed count regardless of inclusion/exclusion
+        processed_files += (
+            1  # Increment processed count regardless of inclusion/exclusion
+        )
 
         status = "processed"
         if not included or excluded:
@@ -99,8 +109,10 @@ def crawl_local_files(
             if total_files > 0:
                 percentage = (processed_files / total_files) * 100
                 rounded_percentage = int(percentage)
-                print(f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m")
-            continue # Skip to next file if not included or excluded
+                print(
+                    f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m"
+                )
+            continue  # Skip to next file if not included or excluded
 
         if max_file_size and os.path.getsize(filepath) > max_file_size:
             status = "skipped (size limit)"
@@ -108,10 +120,12 @@ def crawl_local_files(
             if total_files > 0:
                 percentage = (processed_files / total_files) * 100
                 rounded_percentage = int(percentage)
-                print(f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m")
-            continue # Skip large files
+                print(
+                    f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m"
+                )
+            continue  # Skip large files
 
-        # --- File is being processed ---        
+        # --- File is being processed ---
         try:
             with open(filepath, "r", encoding="utf-8-sig") as f:
                 content = f.read()
@@ -124,7 +138,9 @@ def crawl_local_files(
         if total_files > 0:
             percentage = (processed_files / total_files) * 100
             rounded_percentage = int(percentage)
-            print(f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m")
+            print(
+                f"\033[92mProgress: {processed_files}/{total_files} ({rounded_percentage}%) {relpath} [{status}]\033[0m"
+            )
 
     return {"files": files_dict}
 
