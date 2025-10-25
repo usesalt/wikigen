@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "salt-docs"
 version = "0.1.3"
-description = "Intelligent codebase analysis and documentation generation tool"
+description = "Wiki's for nerds, by nerds"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
