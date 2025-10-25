@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2025-01-25
+
+### Added
+- Fallback formatters for improved error handling and robustness
+- Enhanced documentation generation with comprehensive component structure
+- Improved CLI error handling with graceful fallback mechanisms
+
+### Changed
+- Refactored chapters to components architecture for better organization
+- Enhanced output formatting with more robust error handling
+- Improved CLI interface with better fallback support
+
+### Improved
+- Code organization and maintainability
+- Error handling and user experience
+- Documentation structure and clarity
+
 ## [0.1.3] - 2025-01-23
 
 ### Added

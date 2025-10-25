@@ -4,7 +4,7 @@ Centralized version definition for consistency.
 """
 
 # Current version - update this when releasing
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 
 def get_version():
