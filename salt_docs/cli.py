@@ -19,7 +19,16 @@ from .config import (
 )
 from .defaults import DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
 from .flows.flow import create_tutorial_flow
-from .formatter.output_formatter import print_header, print_info, print_final_success
+from .formatter.output_formatter import (
+    print_header, 
+    print_info, 
+    print_final_success,
+    print_error_missing_api_key,
+    print_error_invalid_api_key,
+    print_error_rate_limit,
+    print_error_network,
+    print_error_general
+)
 from .metadata.logo import print_logo
 from .metadata import DESCRIPTION, CLI_ENTRY_POINT
 from .metadata.version import get_version
@@ -147,7 +156,10 @@ def main():
         )
         if not github_token:
             print(
-                "Warning: No GitHub token provided. You might hit rate limits for public repositories."
+                "⚠ Warning: No GitHub token provided.\n"
+                "  • For public repos: Optional, but you may hit rate limits (60 requests/hour)\n"
+                "  • For private repos: Required for access\n"
+                f"  • To add a token: Run '{CLI_ENTRY_POINT} config update-github-token'"
             )
 
     # Merge config with CLI args (CLI takes precedence)
@@ -202,13 +214,33 @@ def main():
 
     # Run the flow
     start_time = time.time()
-    tutorial_flow.run(shared)
-    total_time = time.time() - start_time
+    try:
+        tutorial_flow.run(shared)
+        total_time = time.time() - start_time
 
-    # Print final success message
-    print_final_success(
-        "Success! Documents generated", total_time, shared["final_output_dir"]
-    )
+        # Print final success message
+        print_final_success(
+            "Success! Documents generated", total_time, shared["final_output_dir"]
+        )
+    except ValueError as e:
+        # Handle missing/invalid API key
+        if "GEMINI_API_KEY not found" in str(e):
+            print_error_missing_api_key()
+        else:
+            print_error_general(e)
+        sys.exit(1)
+    except Exception as e:
+        # Check error type and show appropriate message
+        error_str = str(e).lower()
+        if "401" in error_str or "unauthorized" in error_str or "invalid api key" in error_str:
+            print_error_invalid_api_key()
+        elif "rate limit" in error_str or "429" in error_str:
+            print_error_rate_limit()
+        elif "connection" in error_str or "timeout" in error_str or "network" in error_str:
+            print_error_network()
+        else:
+            print_error_general(e)
+        sys.exit(1)
 
 
 def handle_config_command():

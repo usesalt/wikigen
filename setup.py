@@ -14,7 +14,7 @@ def get_version():
 # Static metadata
 PROJECT_NAME = "salt-docs"
 AUTHOR_NAME = "Mithun Ramesh"
-DESCRIPTION = "Intelligent codebase analysis and documentation generation tool"
+DESCRIPTION = "Wiki's for nerds, by nerds"
 MIN_PYTHON_VERSION = "3.12"
 
 setup(

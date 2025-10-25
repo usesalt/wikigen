@@ -1,6 +1,6 @@
 # Salt Docs CLI
 
-AI-powered tool that analyzes codebases and generates beginner-friendly documentation.
+Wiki's for nerds, by nerds
 
 ## How it works
 
@@ -9,7 +9,7 @@ flowchart LR
     A[Codebase] --> B[Crawl Files]
     B --> C[Analyze Structure]
     C --> D[Identify Abstractions]
-    D --> E[Generate Tutorials]
+    D --> E[Generate Documentation]
     E --> F[Markdown Docs]
 ```
 

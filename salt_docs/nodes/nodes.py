@@ -169,11 +169,11 @@ Codebase Context:
 {context}
 
 {language_instruction}Analyze the codebase context.
-Identify the top 5-{max_abstraction_num} core most important abstractions to help those new to the codebase.
+Identify the top 5-{max_abstraction_num} core most important abstractions for technical documentation that helps existing and new engineers understand the codebase.
 
 For each abstraction, provide:
 1. A concise `name`{name_lang_hint}.
-2. A beginner-friendly `description` explaining what it is with a simple analogy, in around 100 words{desc_lang_hint}.
+2. A technical `description` explaining what it does, its responsibilities, and role in the system, in around 100 words{desc_lang_hint}.
 3. A list of relevant `file_indices` (integers) using the format `idx # path/comment`.
 
 List of file indices and paths present in the context:
@@ -185,15 +185,16 @@ Format the output as a YAML list of dictionaries:
 - name: |
     Query Processing{name_lang_hint}
   description: |
-    Explains what the abstraction does.
-    It's like a central dispatcher routing requests.{desc_lang_hint}
+    Handles incoming queries and routes them to appropriate handlers.
+    Responsible for parsing, validation, and initial processing of user requests.{desc_lang_hint}
   file_indices:
     - 0 # path/to/file1.py
     - 3 # path/to/related.py
 - name: |
     Query Optimization{name_lang_hint}
   description: |
-    Another core concept, similar to a blueprint for objects.{desc_lang_hint}
+    Optimizes query execution by analyzing patterns and caching results.
+    Manages performance improvements and resource allocation for query processing.{desc_lang_hint}
   file_indices:
     - 5 # path/to/another.js
 # ... up to {max_abstraction_num} abstractions
@@ -349,7 +350,7 @@ Context (Abstractions, Descriptions, Code):
 {context}
 
 {language_instruction}Please provide:
-1. A high-level `summary` of the project's main purpose and functionality in a few beginner-friendly sentences{lang_hint}. Use markdown formatting with **bold** and *italic* text to highlight important concepts.
+1. A high-level technical `summary` of the project's purpose, architecture, functionalities and their responsibilities{lang_hint}. Use markdown formatting with **bold** and *italic* text to highlight important concepts.
 2. A list (`relationships`) describing the key interactions between these abstractions. For each relationship, specify:
     - `from_abstraction`: Index of the source abstraction (e.g., `0 # AbstractionName1`)
     - `to_abstraction`: Index of the target abstraction (e.g., `1 # AbstractionName2`)
@@ -363,7 +364,7 @@ Format the output as YAML:
 
 ```yaml
 summary: |
-  A brief, simple explanation of the project{lang_hint}.
+  A technical overview of the project architecture{lang_hint}.
   Can span multiple lines with **bold** and *italic* for emphasis.
 relationships:
   - from_abstraction: 0 # AbstractionName1
@@ -499,7 +500,7 @@ class OrderChapters(Node):
             use_cache,
         ) = prep_res  # Unpack use_cache
 
-        print_operation("Determining chapter order...", Icons.ORDERING, indent=1)
+        print_operation("Determining component order...", Icons.ORDERING, indent=1)
         # No language variation needed here in prompt instructions, just ordering based on structure
         # The input names might be translated, hence the note.
         prompt = f"""
@@ -511,8 +512,8 @@ Abstractions (Index # Name){list_lang_note}:
 Context about relationships and project summary:
 {context}
 
-If you are going to make a tutorial for ```` {project_name} ````, what is the best order to explain these abstractions, from first to last?
-Ideally, first explain those that are the most important or foundational, perhaps user-facing concepts or entry points. Then move to more detailed, lower-level implementation details or supporting concepts.
+If you are going to create technical documentation for ```` {project_name} ````, what is the best order to document these components, from first to last?
+Ideally, first document those that are the most important or foundational, perhaps user-facing concepts or entry points. Then move to more detailed, lower-level implementation details or supporting concepts.
 
 Output the ordered list of abstraction indices, including the name in a comment for clarity. Use the format `idx # AbstractionName`.
 
@@ -724,52 +725,52 @@ class WriteChapters(BatchNode):
             tone_note = f" (appropriate for {lang_cap} readers)"
 
         prompt = f"""
-{language_instruction}Write a very beginner-friendly tutorial chapter (in Markdown format) for the project `{project_name}` about the concept: "{abstraction_name}". This is Chapter {chapter_num}.
+{language_instruction}Write technical documentation (in Markdown format) for engineers working with the component "{abstraction_name}" in the project `{project_name}`. This is Component {chapter_num}.
 
-Concept Details{concept_details_note}:
+Component/Concept Details{concept_details_note}:
 - Name: {abstraction_name}
 - Description:
 {abstraction_description}
 
-Complete Tutorial Structure{structure_note}:
+Complete Documentation Structure{structure_note}:
 {item["full_chapter_listing"]}
 
-Context from previous chapters{prev_summary_note}:
-{previous_chapters_summary if previous_chapters_summary else "This is the first chapter."}
+Context from previous components{prev_summary_note}:
+{previous_chapters_summary if previous_chapters_summary else "This is the first component."}
 
 Relevant Code Snippets (Code itself remains unchanged):
 {file_context_str if file_context_str else "No specific code snippets provided for this abstraction."}
 
-Instructions for the chapter (Generate content in {language.capitalize()} unless specified otherwise):
-- Start with a clear heading (e.g., `# Chapter {chapter_num}: {abstraction_name}`). Use the provided concept name.
+Instructions for the documentation (Generate content in {language.capitalize()} unless specified otherwise):
+- Start with a clear heading (e.g., `# Component {chapter_num}: {abstraction_name}`). Use the provided component name.
 
-- If this is not the first chapter, begin with a brief transition from the previous chapter{instruction_lang_note}, referencing it with a proper Markdown link using its name{link_lang_note}.
+- If this is not the first component, begin with a brief reference to the previous component{instruction_lang_note}, linking to it with a proper Markdown link using its name{link_lang_note}.
 
-- Begin with a high-level motivation explaining what problem this abstraction solves{instruction_lang_note}. Start with a central use case as a concrete example. The whole chapter should guide the reader to understand how to solve this use case. Make it very minimal and friendly to beginners.
+- Begin with why this component exists{instruction_lang_note} - what problem it solves and its core responsibilities. Focus on the component's purpose in the system architecture.
 
-- If the abstraction is complex, break it down into key concepts. Explain each concept one-by-one in a very beginner-friendly way{instruction_lang_note}.
+- Document what this component does{instruction_lang_note} - its key responsibilities, how it works, and how it integrates with other components.
 
-- Explain how to use this abstraction to solve the use case{instruction_lang_note}. Give example inputs and outputs for code snippets (if the output isn't values, describe at a high level what will happen{instruction_lang_note}).
+- If the component is complex, break it down into key concepts. Explain each concept with technical precision{instruction_lang_note}.
 
-- Each code block should be BELOW 10 lines! If longer code blocks are needed, break them down into smaller pieces and walk through them one-by-one. Aggresively simplify the code to make it minimal. Use comments{code_comment_note} to skip non-important implementation details. Each code block should have a beginner friendly explanation right after it{instruction_lang_note}.
+- Each code block should be BELOW 10 lines! If longer code blocks are needed, break them down into smaller pieces and walk through them one-by-one. Aggresively simplify the code to make it minimal. Use comments{code_comment_note} to skip non-important implementation details. Each code block should have a solid explanation right after it{instruction_lang_note}.
 
 - Describe the internal implementation to help understand what's under the hood{instruction_lang_note}. First provide a non-code or code-light walkthrough on what happens step-by-step when the abstraction is called{instruction_lang_note}. It's recommended to use a simple sequenceDiagram with a dummy example - keep it minimal with at most 5 participants to ensure clarity. If participant name has space, use: `participant QP as Query Processing`. {mermaid_lang_note}.
 
 - Then dive deeper into code for the internal implementation with references to files. Provide example code blocks, but make them similarly simple and beginner-friendly. Explain{instruction_lang_note}.
 
-- IMPORTANT: When you need to refer to other core abstractions covered in other chapters, ALWAYS use proper Markdown links like this: [Chapter Title](filename.md). Use the Complete Tutorial Structure above to find the correct filename and the chapter title{link_lang_note}. Translate the surrounding text.
+- IMPORTANT: When you need to refer to other core components covered in other sections, ALWAYS use proper Markdown links like this: [Component Title](filename.md). Use the Complete Documentation Structure above to find the correct filename and the component title{link_lang_note}. Translate the surrounding text.
 
 - Use mermaid diagrams to illustrate complex concepts (```mermaid``` format). {mermaid_lang_note}.
 
-- Heavily use analogies and examples throughout{instruction_lang_note} to help beginners understand.
+- Provide concrete code examples from the codebase showing actual usage and implementation patterns{instruction_lang_note}.
 
-- End the chapter with a brief conclusion that summarizes what was learned{instruction_lang_note} and provides a transition to the next chapter{instruction_lang_note}. If there is a next chapter, use a proper Markdown link: [Next Chapter Title](next_chapter_filename){link_lang_note}.
+- End the component documentation with key takeaways{instruction_lang_note}: what this component handles, common usage patterns, and integration points. If there is a next component, use a proper Markdown link: [Next Component Title](next_component_filename){link_lang_note}.
 
-- Ensure the tone is welcoming and easy for a newcomer to understand{tone_note}.
+- Ensure the tone is technical and precise{tone_note}.
 
-- Output *only* the Markdown content for this chapter.
+- Output *only* the Markdown content for this component.
 
-Now, directly provide a super beginner-friendly Markdown output (DON'T need ```markdown``` tags):
+Now, directly provide technical Markdown documentation (DON'T need ```markdown``` tags):
 """
         chapter_content = call_llm(
             prompt, use_cache=(use_cache and self.cur_retry == 0)
@@ -784,14 +785,14 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
 
         # Show the operation with timing
         print_operation(
-            f"Chapter {chapter_num}: {abstraction_name}",
+            f"Component {chapter_num}: {abstraction_name}",
             Icons.WRITING,
             indent=1,
             elapsed_time=elapsed,
         )
         # Basic validation/cleanup
-        actual_heading = f"# Chapter {chapter_num}: {abstraction_name}"  # Use potentially translated name
-        if not chapter_content.strip().startswith(f"# Chapter {chapter_num}"):
+        actual_heading = f"# Component {chapter_num}: {abstraction_name}"  # Use potentially translated name
+        if not chapter_content.strip().startswith(f"# Component {chapter_num}"):
             # Add heading if missing or incorrect, trying to preserve content
             lines = chapter_content.strip().split("\n")
             if lines and lines[0].strip().startswith(
@@ -813,7 +814,7 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
 
         # Calculate total time
         total_time = sum(self.chapter_times) if hasattr(self, "chapter_times") else 0
-        print_success(f"{len(exec_res_list)} chapters written", total_time, indent=1)
+        print_success(f"{len(exec_res_list)} components written", total_time, indent=1)
         print_phase_end()
 
         # Cleanup
@@ -878,6 +879,9 @@ class GenerateDocContent(Node):
             if i < len(chapters_content) - 1:
                 combined += "\n\n---\n\n"
 
+        # Add separator at the bottom
+        combined += "\n\n---\n\nWiki created by [SALT](https://usesalt.co)\n"
+
         return combined
 
     def exec(self, prep_res):
@@ -933,10 +937,10 @@ class GenerateDocContent(Node):
         index_content += "```\n\n"
 
         # Keep fixed strings in English
-        index_content += f"## Chapters\n\n"
+        index_content += f"## Components\n\n"
 
         chapter_files = []
-        # Generate chapter links based on the determined order, using potentially translated names
+        # Generate component links based on the determined order, using potentially translated names
         for i, abstraction_index in enumerate(chapter_order):
             # Ensure index is valid and we have content for it
             if 0 <= abstraction_index < len(abstractions) and i < len(chapters_content):

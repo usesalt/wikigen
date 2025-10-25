@@ -204,3 +204,48 @@ def print_final_success(message, total_time, output_path):
         f"{Colors.WHITE}{Icons.SUCCESS} {message} {Colors.DARK_GRAY}{format_time(total_time)} total{Colors.RESET}"
     )
     print(f"{Colors.MEDIUM_GRAY}📂 {Colors.WHITE}{output_path}{Colors.RESET}")
+
+
+def print_error_missing_api_key():
+    """Print error message for missing API key."""
+    from ..metadata import CLI_ENTRY_POINT
+    
+    print()
+    print(f"{Colors.WHITE}{Icons.ERROR} Error: Gemini API key not found{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  To configure your API key, run:{Colors.RESET}")
+    print(f"{Colors.WHITE}    {CLI_ENTRY_POINT} config update-gemini-key{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  Or set the GEMINI_API_KEY environment variable{Colors.RESET}")
+
+
+def print_error_invalid_api_key():
+    """Print error message for invalid API key."""
+    from ..metadata import CLI_ENTRY_POINT
+    
+    print()
+    print(f"{Colors.WHITE}{Icons.ERROR} Error: Invalid or unauthorized API key{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  Your API key may be invalid or expired.{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  To update your API key, run:{Colors.RESET}")
+    print(f"{Colors.WHITE}    {CLI_ENTRY_POINT} config update-gemini-key{Colors.RESET}")
+
+
+def print_error_rate_limit():
+    """Print error message for rate limit errors."""
+    print()
+    print(f"{Colors.WHITE}{Icons.ERROR} Error: Rate limit exceeded{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  You've hit the API rate limit. Please wait and try again.{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  Consider using --no-cache flag to reduce API calls.{Colors.RESET}")
+
+
+def print_error_network():
+    """Print error message for network errors."""
+    print()
+    print(f"{Colors.WHITE}{Icons.ERROR} Error: Network connection issue{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  Unable to connect to the API. Please check your internet connection.{Colors.RESET}")
+
+
+def print_error_general(error):
+    """Print error message for general/unexpected errors."""
+    print()
+    print(f"{Colors.WHITE}{Icons.ERROR} Error: An unexpected error occurred{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  {str(error)}{Colors.RESET}")
+    print(f"{Colors.MEDIUM_GRAY}  Please check your configuration and try again.{Colors.RESET}")
