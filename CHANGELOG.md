@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2025-01-28
+
+### Changed
+- Updated version to 0.1.5
+- Fixed code formatting with black formatter
+- Improved code quality and consistency
+
+### Improved
+- Code formatting and style consistency
+- Project maintainability
+- Development workflow
+
 ## [0.1.4] - 2025-01-25
 
 ### Added
@@ -10,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - Improved CLI error handling with graceful fallback mechanisms
 
 ### Changed
-- Refactored chapters to components architecture for better organization
+- Refactored components to components architecture for better organization
 - Enhanced output formatting with more robust error handling
 - Improved CLI interface with better fallback support
 

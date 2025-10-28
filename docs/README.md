@@ -1,4 +1,4 @@
-# salt-docs-cli
+# SALT DOCS
 
 The `salt-docs-cli` project is an **AI-powered command-line interface** designed for *automating documentation generation* from codebases. Its core purpose is to analyze specified GitHub repositories or local directories, identify key abstractions, and generate user-friendly documentation in various formats and languages. The architecture is **CLI-driven**, leveraging *Google Gemini AI* for intelligent content creation, supported by a robust configuration management system that includes secure keyring storage for sensitive credentials like API keys.
 
@@ -24,7 +24,7 @@ flowchart TD
     A4 -- "Retrieves output config" --> A3
 ```
 
-## Chapters
+## Components
 
 1. [CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md)
 2. [Configuration & Credential Management](02_configuration___credential_management_.md)
@@ -32,11 +32,9 @@ flowchart TD
 4. [LLM Integration & Response Caching](04_llm_integration___response_caching_.md)
 5. [Documentation Generation & Output Formatting](05_documentation_generation___output_formatting_.md)
 
-
-
 ---
 
-## Chapter 1: CLI Command & Argument Parsing
+## Component 1: CLI Command & Argument Parsing
 
 ### Purpose and Core Responsibilities
 
@@ -255,13 +253,13 @@ The `CLI Command & Argument Parsing` component is the foundation of the Salt Doc
 
 This component ensures that every user command is correctly understood and routed, forming a reliable and intuitive entry point to the Salt Docs CLI's powerful features.
 
-[Next Chapter: Configuration & Credential Management](02_configuration___credential_management_.md)
+[Next Component: Configuration & Credential Management](02_configuration___credential_management_.md)
 
 ---
 
-## Chapter 2: Configuration & Credential Management
+## Component 2: Configuration & Credential Management
 
-This chapter delves into the mechanisms Salt Docs CLI employs for managing persistent settings and sensitive information, building upon the user interactions initiated by the [CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md) component.
+This component delves into the mechanisms Salt Docs CLI employs for managing persistent settings and sensitive information, building upon the user interactions initiated by the [CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md) component.
 
 ### Purpose and Core Responsibilities
 
@@ -423,10 +421,10 @@ class KeyringManager:
 
 ##### 4. Integration with CLI Commands (`salt_docs/config_commands.py`)
 
-The `config` sub-command group (introduced in [Chapter 1: CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md)) directly interacts with the `ConfigManager` and `KeyringManager` to perform its actions.
+The `config` sub-command group (introduced in [Component 1: CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md)) directly interacts with the `ConfigManager` and `KeyringManager` to perform its actions.
 
 ```python
-# salt_docs/config_commands.py (excerpt, building on Chapter 1)
+# salt_docs/config_commands.py (excerpt, building on Component 1)
 import click
 from salt_docs.config_manager import ConfigManager
 from salt_docs.keyring_manager import KeyringManager
@@ -505,13 +503,13 @@ The `Configuration & Credential Management` component is vital for Salt Docs CLI
 
 This component underpins the application's ability to maintain state across sessions, personalize user experience, and handle sensitive data responsibly.
 
-[Next Chapter: Codebase Analysis & Structure Identification](03_codebase_analysis___structure_identification_.md)
+[Next Component: Codebase Analysis & Structure Identification](03_codebase_analysis___structure_identification_.md)
 
 ---
 
-## Chapter 3: Codebase Analysis & Structure Identification
+## Component 3: Codebase Analysis & Structure Identification
 
-This chapter details the foundational component responsible for understanding a codebase, building upon the user input and configurations established by [CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md) and [Configuration & Credential Management](02_configuration___credential_management_.md).
+This component details the foundational component responsible for understanding a codebase, building upon the user input and configurations established by [CLI Command & Argument Parsing](01_cli_command___argument_parsing_.md) and [Configuration & Credential Management](02_configuration___credential_management_.md).
 
 ### Purpose and Core Responsibilities
 
@@ -798,13 +796,13 @@ The `Codebase Analysis & Structure Identification` component is the cornerstone 
 
 This component ensures that the Salt Docs CLI works with a clean, relevant, and well-organized subset of the codebase, which is essential for generating high-quality and pertinent documentation.
 
-[Next Chapter: LLM Integration & Response Caching](04_llm_integration___response_caching_.md)
+[Next Component: LLM Integration & Response Caching](04_llm_integration___response_caching_.md)
 
 ---
 
-## Chapter 4: LLM Integration & Response Caching
+## Component 4: LLM Integration & Response Caching
 
-This chapter details the crucial component responsible for interacting with Large Language Models (LLMs) and efficiently managing their responses, directly building upon the structured codebase data provided by the [Codebase Analysis & Structure Identification](03_codebase_analysis___structure_identification_.md) component and leveraging settings from [Configuration & Credential Management](02_configuration___credential_management_.md).
+This component details the crucial component responsible for interacting with Large Language Models (LLMs) and efficiently managing their responses, directly building upon the structured codebase data provided by the [Codebase Analysis & Structure Identification](03_codebase_analysis___structure_identification_.md) component and leveraging settings from [Configuration & Credential Management](02_configuration___credential_management_.md).
 
 ### Purpose and Core Responsibilities
 
@@ -1061,13 +1059,13 @@ The `LLM Integration & Response Caching` component is foundational for the Salt 
 
 This component ensures that the Salt Docs CLI can deliver fast, cost-effective, and intelligent documentation generation.
 
-[Next Chapter: Documentation Generation & Output Formatting](05_documentation_generation___output_formatting_.md)
+[Next Component: Documentation Generation & Output Formatting](05_documentation_generation___output_formatting_.md)
 
 ---
 
-## Chapter 5: Documentation Generation & Output Formatting
+## Component 5: Documentation Generation & Output Formatting
 
-This chapter details the crucial component responsible for transforming the intelligent insights from the [LLM Integration & Response Caching](04_llm_integration___response_caching_.md) component into user-consumable, well-structured, and visually appealing documentation artifacts.
+This component details the crucial component responsible for transforming the intelligent insights from the [LLM Integration & Response Caching](04_llm_integration___response_caching_.md) component into user-consumable, well-structured, and visually appealing documentation artifacts.
 
 ### Purpose and Core Responsibilities
 

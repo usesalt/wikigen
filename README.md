@@ -22,7 +22,7 @@ pip install salt-docs
 
 ### Option 2: Install from source
 ```bash
-git clone https://github.com/your-org/salt-docs-cli.git
+git clone https://github.com/itsjustmithun/salt-docs-cli.git
 cd salt-docs-cli
 pip install -e .
 ```
@@ -139,7 +139,7 @@ The old approach is no longer supported - please use the new CLI commands.
 
 ### Setup for Development
 ```bash
-git clone https://github.com/your-org/salt-docs-cli.git
+git clone https://github.com/itsjustmithun/salt-docs-cli.git
 cd salt-docs-cli
 pip install -e .
 salt-docs init

@@ -196,8 +196,8 @@ def main():
         "files": [],
         "abstractions": [],
         "relationships": {},
-        "chapter_order": [],
-        "chapters": [],
+        "component_order": [],
+        "components": [],
         "final_output_dir": None,
     }
 

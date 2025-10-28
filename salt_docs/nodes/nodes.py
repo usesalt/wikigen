@@ -445,7 +445,7 @@ Now, provide the YAML output:
         shared["relationships"] = exec_res
 
 
-class OrderChapters(Node):
+class OrderComponents(Node):
     def prep(self, shared):
         abstractions = shared["abstractions"]  # Name/description might be translated
         relationships = shared["relationships"]  # Summary/label might be translated
@@ -576,12 +576,12 @@ Now, provide the YAML output:
 
     def post(self, shared, prep_res, exec_res):
         # exec_res is already the list of ordered indices
-        shared["chapter_order"] = exec_res  # List of indices
+        shared["component_order"] = exec_res  # List of indices
 
 
-class WriteChapters(BatchNode):
+class WriteComponents(BatchNode):
     def prep(self, shared):
-        chapter_order = shared["chapter_order"]  # List of indices
+        component_order = shared["component_order"]  # List of indices
         abstractions = shared[
             "abstractions"
         ]  # List of {"name": str, "description": str, "files": [int]}
@@ -590,45 +590,44 @@ class WriteChapters(BatchNode):
         language = shared.get("language", "english")
         use_cache = shared.get("use_cache", True)  # Get use_cache flag, default to True
 
-        # Get already written chapters to provide context
+        # Get already written components to provide context
         # We store them temporarily during the batch run, not in shared memory yet
-        # The 'previous_chapters_summary' will be built progressively in the exec context
-        self.chapters_written_so_far = (
+        # The 'previous_components_summary' will be built progressively in the exec context
+        self.components_written_so_far = (
             []
         )  # Use instance variable for temporary storage across exec calls
 
-        # Create a complete list of all chapters
-        all_chapters = []
-        chapter_filenames = {}  # Store chapter filename mapping for linking
-        for i, abstraction_index in enumerate(chapter_order):
+        # Create a complete list of all components
+        all_components = []
+        component_filenames = {}  # Store component filename mapping for linking
+        for i, abstraction_index in enumerate(component_order):
             if 0 <= abstraction_index < len(abstractions):
-                chapter_num = i + 1
-                chapter_name = abstractions[abstraction_index][
+                component_num = i + 1
+                component_name = abstractions[abstraction_index][
                     "name"
                 ]  # Potentially translated name
                 # Create safe filename (from potentially translated name)
                 safe_name = "".join(
-                    c if c.isalnum() else "_" for c in chapter_name
+                    c if c.isalnum() else "_" for c in component_name
                 ).lower()
                 filename = f"{i+1:02d}_{safe_name}.md"
                 # Format with link (using potentially translated name)
-                # Strip newlines from chapter name to prevent broken markdown links
-                clean_chapter_name = chapter_name.replace("\n", " ").strip()
-                all_chapters.append(
-                    f"{chapter_num}. [{clean_chapter_name}]({filename})"
+                # Strip newlines from component name to prevent broken markdown links
+                clean_component_name = component_name.replace("\n", " ").strip()
+                all_components.append(
+                    f"{component_num}. [{clean_component_name}]({filename})"
                 )
-                # Store mapping of chapter index to filename for linking
-                chapter_filenames[abstraction_index] = {
-                    "num": chapter_num,
-                    "name": chapter_name,
+                # Store mapping of component index to filename for linking
+                component_filenames[abstraction_index] = {
+                    "num": component_num,
+                    "name": component_name,
                     "filename": filename,
                 }
 
-        # Create a formatted string with all chapters
-        full_chapter_listing = "\n".join(all_chapters)
+        full_component_listing = "\n".join(all_components)
 
         items_to_process = []
-        for i, abstraction_index in enumerate(chapter_order):
+        for i, abstraction_index in enumerate(component_order):
             if 0 <= abstraction_index < len(abstractions):
                 abstraction_details = abstractions[
                     abstraction_index
@@ -640,37 +639,34 @@ class WriteChapters(BatchNode):
                     files_data, related_file_indices
                 )
 
-                # Get previous chapter info for transitions (uses potentially translated name)
-                prev_chapter = None
+                prev_component = None
                 if i > 0:
-                    prev_idx = chapter_order[i - 1]
-                    prev_chapter = chapter_filenames[prev_idx]
+                    prev_idx = component_order[i - 1]
+                    prev_component = component_filenames[prev_idx]
 
-                # Get next chapter info for transitions (uses potentially translated name)
-                next_chapter = None
-                if i < len(chapter_order) - 1:
-                    next_idx = chapter_order[i + 1]
-                    next_chapter = chapter_filenames[next_idx]
+                next_component = None
+                if i < len(component_order) - 1:
+                    next_idx = component_order[i + 1]
+                    next_component = component_filenames[next_idx]
 
                 items_to_process.append(
                     {
-                        "chapter_num": i + 1,
+                        "component_num": i + 1,
                         "abstraction_index": abstraction_index,
                         "abstraction_details": abstraction_details,  # Has potentially translated name/desc
                         "related_files_content_map": related_files_content_map,
                         "project_name": shared["project_name"],  # Add project name
-                        "full_chapter_listing": full_chapter_listing,  # Add the full chapter listing (uses potentially translated names)
-                        "chapter_filenames": chapter_filenames,  # Add chapter filenames mapping (uses potentially translated names)
-                        "prev_chapter": prev_chapter,  # Add previous chapter info (uses potentially translated name)
-                        "next_chapter": next_chapter,  # Add next chapter info (uses potentially translated name)
-                        "language": language,  # Add language for multi-language support
-                        "use_cache": use_cache,  # Pass use_cache flag
-                        # previous_chapters_summary will be added dynamically in exec
+                        "full_component_listing": full_component_listing,
+                        "component_filenames": component_filenames,
+                        "prev_component": prev_component,
+                        "next_component": next_component,
+                        "language": language,
+                        "use_cache": use_cache,
                     }
                 )
             else:
                 print(
-                    f"Warning: Invalid abstraction index {abstraction_index} in chapter_order. Skipping."
+                    f"Warning: Invalid abstraction index {abstraction_index} in component_order. Skipping."
                 )
 
         print_phase_start("Content Generation", Icons.WRITING)
@@ -685,7 +681,7 @@ class WriteChapters(BatchNode):
         abstraction_description = item["abstraction_details"][
             "description"
         ]  # Potentially translated description
-        chapter_num = item["chapter_num"]
+        component_num = item["component_num"]
         project_name = item.get("project_name")
         language = item.get("language", "english")
         use_cache = item.get("use_cache", True)  # Read use_cache from item
@@ -696,9 +692,9 @@ class WriteChapters(BatchNode):
             for idx_path, content in item["related_files_content_map"].items()
         )
 
-        # Get summary of chapters written *before* this one
+        # Get summary of components written *before* this one
         # Use the temporary instance variable
-        previous_chapters_summary = "\n---\n".join(self.chapters_written_so_far)
+        previous_components_summary = "\n---\n".join(self.components_written_so_far)
 
         # Add language instruction and context notes only if not English
         language_instruction = ""
@@ -712,20 +708,20 @@ class WriteChapters(BatchNode):
         tone_note = ""
         if language.lower() != "english":
             lang_cap = language.capitalize()
-            language_instruction = f"IMPORTANT: Write this ENTIRE tutorial chapter in **{lang_cap}**. Some input context (like concept name, description, chapter list, previous summary) might already be in {lang_cap}, but you MUST translate ALL other generated content including explanations, examples, technical terms, and potentially code comments into {lang_cap}. DO NOT use English anywhere except in code syntax, required proper nouns, or when specified. The entire output MUST be in {lang_cap}.\n\n"
+            language_instruction = f"IMPORTANT: Write this ENTIRE tutorial component in **{lang_cap}**. Some input context (like concept name, description, component list, previous summary) might already be in {lang_cap}, but you MUST translate ALL other generated content including explanations, examples, technical terms, and potentially code comments into {lang_cap}. DO NOT use English anywhere except in code syntax, required proper nouns, or when specified. The entire output MUST be in {lang_cap}.\n\n"
             concept_details_note = f" (Note: Provided in {lang_cap})"
-            structure_note = f" (Note: Chapter names might be in {lang_cap})"
+            structure_note = f" (Note: Component names might be in {lang_cap})"
             prev_summary_note = f" (Note: This summary might be in {lang_cap})"
             instruction_lang_note = f" (in {lang_cap})"
             mermaid_lang_note = f" (Use {lang_cap} for labels/text if appropriate)"
             code_comment_note = f" (Translate to {lang_cap} if possible, otherwise keep minimal English for clarity)"
             link_lang_note = (
-                f" (Use the {lang_cap} chapter title from the structure above)"
+                f" (Use the {lang_cap} component title from the structure above)"
             )
             tone_note = f" (appropriate for {lang_cap} readers)"
 
         prompt = f"""
-{language_instruction}Write technical documentation (in Markdown format) for engineers working with the component "{abstraction_name}" in the project `{project_name}`. This is Component {chapter_num}.
+{language_instruction}Write technical documentation (in Markdown format) for engineers working with the component "{abstraction_name}" in the project `{project_name}`. This is Component {component_num}.
 
 Component/Concept Details{concept_details_note}:
 - Name: {abstraction_name}
@@ -733,16 +729,16 @@ Component/Concept Details{concept_details_note}:
 {abstraction_description}
 
 Complete Documentation Structure{structure_note}:
-{item["full_chapter_listing"]}
+{item["full_component_listing"]}
 
 Context from previous components{prev_summary_note}:
-{previous_chapters_summary if previous_chapters_summary else "This is the first component."}
+{previous_components_summary if previous_components_summary else "This is the first component."}
 
 Relevant Code Snippets (Code itself remains unchanged):
 {file_context_str if file_context_str else "No specific code snippets provided for this abstraction."}
 
 Instructions for the documentation (Generate content in {language.capitalize()} unless specified otherwise):
-- Start with a clear heading (e.g., `# Component {chapter_num}: {abstraction_name}`). Use the provided component name.
+- Start with a clear heading (e.g., `# Component {component_num}: {abstraction_name}`). Use the provided component name.
 
 - If this is not the first component, begin with a brief reference to the previous component{instruction_lang_note}, linking to it with a proper Markdown link using its name{link_lang_note}.
 
@@ -772,56 +768,58 @@ Instructions for the documentation (Generate content in {language.capitalize()} 
 
 Now, directly provide technical Markdown documentation (DON'T need ```markdown``` tags):
 """
-        chapter_content = call_llm(
+        component_content = call_llm(
             prompt, use_cache=(use_cache and self.cur_retry == 0)
         )  # Use cache only if enabled and not retrying
 
         elapsed = time.time() - start_time
 
         # Store timing for later summary
-        if not hasattr(self, "chapter_times"):
-            self.chapter_times = []
-        self.chapter_times.append(elapsed)
+        if not hasattr(self, "component_times"):
+            self.component_times = []
+        self.component_times.append(elapsed)
 
         # Show the operation with timing
         print_operation(
-            f"Component {chapter_num}: {abstraction_name}",
+            f"Component {component_num}: {abstraction_name}",
             Icons.WRITING,
             indent=1,
             elapsed_time=elapsed,
         )
         # Basic validation/cleanup
-        actual_heading = f"# Component {chapter_num}: {abstraction_name}"  # Use potentially translated name
-        if not chapter_content.strip().startswith(f"# Component {chapter_num}"):
+        actual_heading = f"# Component {component_num}: {abstraction_name}"  # Use potentially translated name
+        if not component_content.strip().startswith(f"# Component {component_num}"):
             # Add heading if missing or incorrect, trying to preserve content
-            lines = chapter_content.strip().split("\n")
+            lines = component_content.strip().split("\n")
             if lines and lines[0].strip().startswith(
                 "#"
             ):  # If there's some heading, replace it
                 lines[0] = actual_heading
-                chapter_content = "\n".join(lines)
+                component_content = "\n".join(lines)
             else:  # Otherwise, prepend it
-                chapter_content = f"{actual_heading}\n\n{chapter_content}"
+                component_content = f"{actual_heading}\n\n{component_content}"
 
         # Add the generated content to our temporary list for the next iteration's context
-        self.chapters_written_so_far.append(chapter_content)
+        self.components_written_so_far.append(component_content)
 
-        return chapter_content  # Return the Markdown string (potentially translated)
+        return component_content  # Return the Markdown string (potentially translated)
 
     def post(self, shared, prep_res, exec_res_list):
-        # exec_res_list contains the generated Markdown for each chapter, in order
-        shared["chapters"] = exec_res_list
+        # exec_res_list contains the generated Markdown for each component, in order
+        shared["components"] = exec_res_list
 
         # Calculate total time
-        total_time = sum(self.chapter_times) if hasattr(self, "chapter_times") else 0
+        total_time = (
+            sum(self.component_times) if hasattr(self, "component_times") else 0
+        )
         print_success(f"{len(exec_res_list)} components written", total_time, indent=1)
         print_phase_end()
 
         # Cleanup
-        if hasattr(self, "chapter_times"):
-            del self.chapter_times
-        if hasattr(self, "chapters_written_so_far"):
-            del self.chapters_written_so_far
+        if hasattr(self, "component_times"):
+            del self.component_times
+        if hasattr(self, "components_written_so_far"):
+            del self.components_written_so_far
 
 
 class GenerateDocContent(Node):
@@ -835,12 +833,12 @@ class GenerateDocContent(Node):
         relationships_data = shared[
             "relationships"
         ]  # {"summary": str, "details": [{"from": int, "to": int, "label": str}]} -> summary/label potentially translated
-        chapter_order = shared["chapter_order"]  # indices
+        component_order = shared["component_order"]  # indices
         abstractions = shared[
             "abstractions"
         ]  # list of dicts -> name/description potentially translated
-        chapters_content = shared[
-            "chapters"
+        components_content = shared[
+            "components"
         ]  # list of strings -> content potentially translated
 
         return {
@@ -848,12 +846,14 @@ class GenerateDocContent(Node):
             "output_path": output_path,
             "repo_url": repo_url,
             "relationships_data": relationships_data,
-            "chapter_order": chapter_order,
+            "component_order": component_order,
             "abstractions": abstractions,
-            "chapters_content": chapters_content,
+            "components_content": components_content,
         }
 
-    def _generate_combined_content(self, project_name, index_content, chapters_content):
+    def _generate_combined_content(
+        self, project_name, index_content, components_content
+    ):
         """Generate the combined documentation file content."""
         from salt_docs.utils.adjust_headings import (
             adjust_heading_levels,
@@ -870,13 +870,13 @@ class GenerateDocContent(Node):
         # Add separator
         combined += "\n\n---\n\n"
 
-        # Add each chapter with headings shifted down one level
-        for i, chapter_content in enumerate(chapters_content):
-            adjusted_chapter = adjust_heading_levels(chapter_content, shift=1)
-            combined += adjusted_chapter
+        # Add each component with headings shifted down one level
+        for i, component_content in enumerate(components_content):
+            adjusted_component = adjust_heading_levels(component_content, shift=1)
+            combined += adjusted_component
 
-            # Add separator between chapters (except for the last one)
-            if i < len(chapters_content) - 1:
+            # Add separator between components (except for the last one)
+            if i < len(components_content) - 1:
                 combined += "\n\n---\n\n"
 
         # Add separator at the bottom
@@ -890,9 +890,9 @@ class GenerateDocContent(Node):
         output_path = prep_res["output_path"]
         repo_url = prep_res["repo_url"]
         relationships_data = prep_res["relationships_data"]
-        chapter_order = prep_res["chapter_order"]
+        component_order = prep_res["component_order"]
         abstractions = prep_res["abstractions"]
-        chapters_content = prep_res["chapters_content"]
+        components_content = prep_res["components_content"]
 
         print_phase_start("Documentation Assembly", Icons.GENERATING)
 
@@ -939,11 +939,13 @@ class GenerateDocContent(Node):
         # Keep fixed strings in English
         index_content += f"## Components\n\n"
 
-        chapter_files = []
+        component_files = []
         # Generate component links based on the determined order, using potentially translated names
-        for i, abstraction_index in enumerate(chapter_order):
+        for i, abstraction_index in enumerate(component_order):
             # Ensure index is valid and we have content for it
-            if 0 <= abstraction_index < len(abstractions) and i < len(chapters_content):
+            if 0 <= abstraction_index < len(abstractions) and i < len(
+                components_content
+            ):
                 abstraction_name = abstractions[abstraction_index][
                     "name"
                 ]  # Potentially translated name
@@ -952,18 +954,22 @@ class GenerateDocContent(Node):
                     c if c.isalnum() else "_" for c in abstraction_name
                 ).lower()
                 filename = f"{i+1:02d}_{safe_name}.md"
-                # Strip newlines from chapter name to prevent broken markdown links
+                # Strip newlines from component name to prevent broken markdown links
                 clean_abstraction_name = abstraction_name.replace("\n", " ").strip()
                 index_content += f"{i+1}. [{clean_abstraction_name}]({filename})\n"  # Use potentially translated name in link text
 
-                # Chapter content without attribution footer
-                chapter_content = chapters_content[i]  # Potentially translated content
+                # Component content without attribution footer
+                component_content = components_content[
+                    i
+                ]  # Potentially translated content
 
                 # Store filename and corresponding content
-                chapter_files.append({"filename": filename, "content": chapter_content})
+                component_files.append(
+                    {"filename": filename, "content": component_content}
+                )
             else:
                 print(
-                    f"Warning: Mismatch between chapter order, abstractions, or content at index {i} (abstraction index {abstraction_index}). Skipping file generation for this entry."
+                    f"Warning: Mismatch between component order, abstractions, or content at index {i} (abstraction index {abstraction_index}). Skipping file generation for this entry."
                 )
 
         # Add attribution to index content (using English fixed string)
@@ -971,7 +977,7 @@ class GenerateDocContent(Node):
 
         # Generate combined content
         combined_content = self._generate_combined_content(
-            project_name, index_content, chapters_content
+            project_name, index_content, components_content
         )
 
         elapsed = time.time() - start_time
@@ -982,8 +988,8 @@ class GenerateDocContent(Node):
             "project_name": project_name,
             "output_path": output_path,
             "index_content": index_content,
-            "chapter_files": chapter_files,  # List of {"filename": str, "content": str}
-            "combined_content": combined_content,  # NEW: Combined documentation
+            "component_files": component_files,
+            "combined_content": combined_content,
         }
 
     def post(self, shared, prep_res, exec_res):
@@ -998,43 +1004,22 @@ class WriteDocFiles(Node):
         start_time = time.time()
         project_name = doc_content["project_name"]
         output_path = doc_content["output_path"]
-        index_content = doc_content["index_content"]
-        chapter_files = doc_content["chapter_files"]
         combined_content = doc_content["combined_content"]
 
         print_phase_start("Writing Output Files", Icons.CREATING)
         # Rely on Node's built-in retry/fallback
         os.makedirs(output_path, exist_ok=True)
 
-        written_files = []
-
-        # Write index.md
-        index_filepath = os.path.join(output_path, "index.md")
-        with open(index_filepath, "w", encoding="utf-8") as f:
-            f.write(index_content)
-        written_files.append(index_filepath)
-        print_operation(f"{Icons.SUCCESS} index.md", indent=1)
-
-        # Write chapter files
-        for chapter_info in chapter_files:
-            chapter_filepath = os.path.join(output_path, chapter_info["filename"])
-            with open(chapter_filepath, "w", encoding="utf-8") as f:
-                f.write(chapter_info["content"])
-            written_files.append(chapter_filepath)
-            print_operation(f"{Icons.SUCCESS} {chapter_info['filename']}", indent=1)
-
         # Write combined file
         combined_filepath = os.path.join(output_path, f"{project_name}.md")
         with open(combined_filepath, "w", encoding="utf-8") as f:
             f.write(combined_content)
-        written_files.append(combined_filepath)
         print_operation(f"{Icons.SUCCESS} {project_name}.md", indent=1)
 
         elapsed = time.time() - start_time
-        print_success(f"{len(written_files)} files written", elapsed, indent=1)
+        print_success("Documentation file written", elapsed, indent=1)
 
         return output_path  # Return the final path
 
     def post(self, shared, prep_res, exec_res):
         shared["final_output_dir"] = exec_res  # Store the output path
-        # Remove the print statement here - handled by cli.py's final message
