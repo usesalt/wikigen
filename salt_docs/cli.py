@@ -5,10 +5,6 @@ CLI entry point for Salt Docs.
 import sys
 import argparse
 import time
-from pathlib import Path
-
-# Add the parent directory to the path so we can import from the package
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .config import (
     init_config,
@@ -16,6 +12,8 @@ from .config import (
     merge_config_with_args,
     check_config_exists,
     save_config,
+    should_check_for_updates,
+    update_last_check_timestamp,
 )
 from .defaults import DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
 from .flows.flow import create_tutorial_flow
@@ -28,11 +26,13 @@ from .formatter.output_formatter import (
     print_error_rate_limit,
     print_error_network,
     print_error_general,
+    print_update_notification,
 )
 from .metadata.logo import print_logo
 from .metadata import DESCRIPTION, CLI_ENTRY_POINT
 from .metadata.version import get_version
 from .formatter.help_formatter import print_enhanced_help
+from .utils.version_check import check_for_update
 
 
 def main():
@@ -222,6 +222,9 @@ def main():
         print_final_success(
             "Success! Documents generated", total_time, shared["final_output_dir"]
         )
+
+        # Check for updates (non-blocking, only if 24 hours have passed)
+        _check_for_updates_quietly()
     except ValueError as e:
         # Handle missing/invalid API key
         if "GEMINI_API_KEY not found" in str(e):
@@ -229,7 +232,7 @@ def main():
         else:
             print_error_general(e)
         sys.exit(1)
-    except Exception as e:
+    except (ValueError, IOError, OSError, ConnectionError, TimeoutError) as e:
         # Check error type and show appropriate message
         error_str = str(e).lower()
         if (
@@ -249,6 +252,33 @@ def main():
         else:
             print_error_general(e)
         sys.exit(1)
+
+
+def _check_for_updates_quietly():
+    """
+    Check for updates in the background without blocking the CLI.
+    Only checks if 24 hours have passed since last check.
+    Silently fails on any errors to not interrupt user workflow.
+    """
+    try:
+        # Only check if 24 hours have passed
+        if not should_check_for_updates():
+            return
+
+        current_version = get_version()
+        latest_version = check_for_update(current_version, timeout=5.0)
+
+        # Update timestamp after attempting check (prevents excessive API calls)
+        # Even if network fails, we update to avoid retrying immediately
+        update_last_check_timestamp()
+
+        # If update is available, show notification
+        if latest_version:
+            print_update_notification(current_version, latest_version)
+    except Exception:
+        # Silently fail - don't interrupt user workflow
+        # Catch all exceptions to ensure update checks never break the CLI
+        pass
 
 
 def handle_config_command():
@@ -321,7 +351,7 @@ def show_config():
         github_token = get_github_token()
         print(f"  Gemini API Key: {'✓ Set' if gemini_key else '✘ Not set'}")
         print(f"  GitHub Token: {'✓ Set' if github_token else '✘ Not set'}")
-    except Exception as e:
+    except (IOError, OSError, ValueError, ImportError) as e:
         print(f"  Gemini API Key:  Unable to check ({e})")
         print(f"  GitHub Token:  Unable to check ({e})")
 
@@ -351,10 +381,21 @@ def set_config_value(key, value):
     print(f"✓ Updated {key} to {value}")
 
 
-def update_gemini_key():
-    """Update Gemini API key (interactive)."""
-    import getpass
+def _update_secret(
+    secret_key: str,
+    secret_value: str,
+    display_name: str,
+    allow_empty: bool = False,
+) -> None:
+    """
+    Common function to update a secret in keyring or config file.
 
+    Args:
+        secret_key: The keyring service/key name and config key (e.g., "gemini_api_key")
+        secret_value: The secret value to store (empty string removes it if allow_empty=True)
+        display_name: Human-readable name for messages (e.g., "Gemini API key")
+        allow_empty: If True, empty value removes the secret; if False, empty is invalid
+    """
     try:
         import keyring
 
@@ -362,7 +403,43 @@ def update_gemini_key():
     except ImportError:
         KEYRING_AVAILABLE = False
 
-    print(" Update Gemini API Key")
+    if KEYRING_AVAILABLE:
+        try:
+            if secret_value:
+                keyring.set_password("salt-docs", secret_key, secret_value)
+                print(f"✓ {display_name} updated securely in keyring")
+                return
+            elif allow_empty:
+                keyring.delete_password("salt-docs", secret_key)
+                print(f"✓ {display_name} removed from keyring")
+                return
+            else:
+                print(f"✘ {display_name} cannot be empty")
+                return
+        except (OSError, RuntimeError, AttributeError) as e:
+            print(f"✘ Failed to update keyring: {e}")
+            # Fall through to config file fallback
+
+    # Fallback to config file if keyring not available or failed
+    print("⚠ Keyring not available, updating config file (less secure)")
+    config = load_config()
+    if secret_value:
+        config[secret_key] = secret_value
+        save_config(config)
+        print(f"✓ {display_name} updated in config file")
+    elif allow_empty:
+        config.pop(secret_key, None)
+        save_config(config)
+        print(f"✓ {display_name} removed from config file")
+    else:
+        print(f"✘ {display_name} cannot be empty")
+
+
+def update_gemini_key():
+    """Update Gemini API key (interactive)."""
+    import getpass
+
+    print("+ Update Gemini API Key")
     new_key = getpass.getpass("Enter new Gemini API key: ").strip()
 
     if not new_key:
@@ -372,43 +449,18 @@ def update_gemini_key():
     update_gemini_key_direct(new_key)
 
 
-def update_gemini_key_direct(new_key):
+def update_gemini_key_direct(new_key: str) -> None:
     """Update Gemini API key directly."""
-    try:
-        import keyring
-
-        KEYRING_AVAILABLE = True
-    except ImportError:
-        KEYRING_AVAILABLE = False
-
     if not new_key:
         print("✘ API key cannot be empty")
         return
 
-    if KEYRING_AVAILABLE:
-        try:
-            keyring.set_password("salt-docs", "gemini_api_key", new_key)
-            print("✓ Gemini API key updated securely in keyring")
-        except Exception as e:
-            print(f"✘ Failed to update keyring: {e}")
-    else:
-        print("⚠ Keyring not available, updating config file (less secure)")
-        config = load_config()
-        config["gemini_api_key"] = new_key
-        save_config(config)
-        print("✓ Gemini API key updated in config file")
+    _update_secret("gemini_api_key", new_key, "Gemini API key", allow_empty=False)
 
 
 def update_github_token():
     """Update GitHub token (interactive)."""
     import getpass
-
-    try:
-        import keyring
-
-        KEYRING_AVAILABLE = True
-    except ImportError:
-        KEYRING_AVAILABLE = False
 
     print("+ Update GitHub Token")
     new_token = getpass.getpass(
@@ -418,34 +470,9 @@ def update_github_token():
     update_github_token_direct(new_token)
 
 
-def update_github_token_direct(new_token):
+def update_github_token_direct(new_token: str) -> None:
     """Update GitHub token directly."""
-    try:
-        import keyring
-
-        KEYRING_AVAILABLE = True
-    except ImportError:
-        KEYRING_AVAILABLE = False
-
-    if KEYRING_AVAILABLE:
-        try:
-            if new_token:
-                keyring.set_password("salt-docs", "github_token", new_token)
-                print("✓ GitHub token updated securely in keyring")
-            else:
-                keyring.delete_password("salt-docs", "github_token")
-                print("✓ GitHub token removed from keyring")
-        except Exception as e:
-            print(f"✘ Failed to update keyring: {e}")
-    else:
-        print("⚠ Keyring not available, updating config file (less secure)")
-        config = load_config()
-        if new_token:
-            config["github_token"] = new_token
-        else:
-            config.pop("github_token", None)
-        save_config(config)
-        print("✓ GitHub token updated in config file")
+    _update_secret("github_token", new_token, "GitHub token", allow_empty=True)
 
 
 if __name__ == "__main__":

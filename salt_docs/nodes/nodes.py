@@ -169,7 +169,7 @@ Codebase Context:
 {context}
 
 {language_instruction}Analyze the codebase context.
-Identify the top 5-{max_abstraction_num} core most important abstractions for technical documentation that helps existing and new engineers understand the codebase.
+Identify the top 5 to {max_abstraction_num} core most important abstractions for technical documentation that helps existing and new engineers understand the codebase.
 
 For each abstraction, provide:
 1. A concise `name`{name_lang_hint}.
@@ -708,7 +708,7 @@ class WriteComponents(BatchNode):
         tone_note = ""
         if language.lower() != "english":
             lang_cap = language.capitalize()
-            language_instruction = f"IMPORTANT: Write this ENTIRE tutorial component in **{lang_cap}**. Some input context (like concept name, description, component list, previous summary) might already be in {lang_cap}, but you MUST translate ALL other generated content including explanations, examples, technical terms, and potentially code comments into {lang_cap}. DO NOT use English anywhere except in code syntax, required proper nouns, or when specified. The entire output MUST be in {lang_cap}.\n\n"
+            language_instruction = f"IMPORTANT: Write this ENTIRE documentation component in **{lang_cap}**. Some input context (like concept name, description, component list, previous summary) might already be in {lang_cap}, but you MUST translate ALL other generated content including explanations, examples, technical terms, and potentially code comments into {lang_cap}. DO NOT use English anywhere except in code syntax, required proper nouns, or when specified. The entire output MUST be in {lang_cap}.\n\n"
             concept_details_note = f" (Note: Provided in {lang_cap})"
             structure_note = f" (Note: Component names might be in {lang_cap})"
             prev_summary_note = f" (Note: This summary might be in {lang_cap})"
@@ -748,11 +748,11 @@ Instructions for the documentation (Generate content in {language.capitalize()} 
 
 - If the component is complex, break it down into key concepts. Explain each concept with technical precision{instruction_lang_note}.
 
-- Each code block should be BELOW 10 lines! If longer code blocks are needed, break them down into smaller pieces and walk through them one-by-one. Aggresively simplify the code to make it minimal. Use comments{code_comment_note} to skip non-important implementation details. Each code block should have a solid explanation right after it{instruction_lang_note}.
+- Each code block should be BELOW 10 lines! If longer code blocks are needed, break them down into smaller pieces and walk through them one-by-one. Aggresively simplify the code to make it minimal. Use comments{code_comment_note} to skip non-important implementation details. Each code block should have a solid explanation right after it{instruction_lang_note}. Make sure you dont include Imports or packages in the code blocks, keep it focused on the key logic always.
 
-- Describe the internal implementation to help understand what's under the hood{instruction_lang_note}. First provide a non-code or code-light walkthrough on what happens step-by-step when the abstraction is called{instruction_lang_note}. It's recommended to use a simple sequenceDiagram with a dummy example - keep it minimal with at most 5 participants to ensure clarity. If participant name has space, use: `participant QP as Query Processing`. {mermaid_lang_note}.
+- Describe the internal implementation to help understand what's under the hood{instruction_lang_note}. First provide a non-code or code-light walkthrough on what happens step-by-step when the abstraction is called{instruction_lang_note}. It's recommended to use a simple sequenceDiagram - keep it minimal with at most 5 participants to ensure clarity. If participant name has space, use: `participant QP as Query Processing`. {mermaid_lang_note}.
 
-- Then dive deeper into code for the internal implementation with references to files. Provide example code blocks, but make them similarly simple and beginner-friendly. Explain{instruction_lang_note}.
+- Then dive deeper into code for the internal implementation with references to files. Provide example code blocks, but make them similarly simple and beginner-friendly. Dont include imports or packages in the code blocks. Explain{instruction_lang_note}.
 
 - IMPORTANT: When you need to refer to other core components covered in other sections, ALWAYS use proper Markdown links like this: [Component Title](filename.md). Use the Complete Documentation Structure above to find the correct filename and the component title{link_lang_note}. Translate the surrounding text.
 

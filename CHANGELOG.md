@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2025-01-28
+
+### Added
+- Automatic update notification system
+- Users now get notified when newer versions are available on PyPI
+- Update checks occur once per day (24-hour interval)
+- Notifications appear at the end of successful CLI runs
+- Comprehensive test coverage for version checking functionality
+
+### Changed
+- Updated version to 0.1.6
+
+### Improved
+- User experience with automated update awareness
+- Code quality with additional test suite
+
 ## [0.1.5] - 2025-01-28
 
 ### Changed

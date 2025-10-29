@@ -65,4 +65,5 @@ DEFAULT_CONFIG = {
     "use_cache": True,
     "include_patterns": list(DEFAULT_INCLUDE_PATTERNS),
     "exclude_patterns": list(DEFAULT_EXCLUDE_PATTERNS),
+    "last_update_check": None,  # Timestamp of last update check (None means never checked)
 }

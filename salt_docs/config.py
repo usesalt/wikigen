@@ -6,6 +6,7 @@ Handles loading, saving, and merging configuration with CLI arguments.
 import os
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -63,7 +64,7 @@ def init_config() -> None:
             keyring.set_password("salt-docs", "gemini_api_key", gemini_key)
             if github_token:
                 keyring.set_password("salt-docs", "github_token", github_token)
-        except Exception:
+        except (OSError, RuntimeError, AttributeError):
             keyring_available = False
 
     # Preferences section
@@ -148,7 +149,7 @@ def load_config() -> Dict[str, Any]:
             github_token = keyring.get_password("salt-docs", "github_token")
             if github_token:
                 config["github_token"] = github_token
-        except Exception as e:
+        except (OSError, RuntimeError, AttributeError) as e:
             print(f"⚠ Warning: Could not load from keyring: {e}")
 
     return config
@@ -215,32 +216,38 @@ def check_config_exists() -> bool:
 def get_api_key() -> Optional[str]:
     """Get API key from config or environment."""
     config = load_config()
-
-    # Try config first
-    api_key = config.get("gemini_api_key")
-    if api_key:
-        return api_key
-
-    # Fallback to environment variable
-    api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        return api_key
-
-    return None
+    return config.get("gemini_api_key") or os.getenv("GEMINI_API_KEY")
 
 
 def get_github_token() -> Optional[str]:
     """Get GitHub token from config or environment."""
     config = load_config()
+    return config.get("github_token") or os.getenv("GITHUB_TOKEN")
 
-    # Try config first
-    token = config.get("github_token")
-    if token:
-        return token
 
-    # Fallback to environment variable
-    token = os.getenv("GITHUB_TOKEN")
-    if token:
-        return token
+def should_check_for_updates() -> bool:
+    """
+    Check if 24 hours have passed since last update check.
 
-    return None
+    Returns:
+        True if update check should be performed, False otherwise
+    """
+    config = load_config()
+    last_check = config.get("last_update_check")
+
+    # If never checked, return True
+    if last_check is None:
+        return True
+
+    # Check if 24 hours (86400 seconds) have passed
+    current_time = time.time()
+    time_since_last_check = current_time - last_check
+
+    return time_since_last_check >= 86400
+
+
+def update_last_check_timestamp() -> None:
+    """Update the last update check timestamp to current time."""
+    config = load_config()
+    config["last_update_check"] = time.time()
+    save_config(config)

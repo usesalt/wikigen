@@ -39,7 +39,7 @@ def crawl_local_files(
                 "gitwildmatch", gitignore_patterns
             )
             print(f"Loaded .gitignore patterns from {gitignore_path}")
-        except Exception as e:
+        except (IOError, OSError, UnicodeDecodeError) as e:
             print(
                 f"Warning: Could not read or parse .gitignore file {gitignore_path}: {e}"
             )
@@ -115,7 +115,7 @@ def crawl_local_files(
                 Icons.DOWNLOAD,
                 indent=2,
             )
-        except Exception as e:
+        except (IOError, OSError, UnicodeDecodeError, PermissionError) as e:
             print_operation(f"{relpath}: {e}", Icons.ERROR, indent=2)
 
     return {"files": files_dict}

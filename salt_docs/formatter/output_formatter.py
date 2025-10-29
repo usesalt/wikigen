@@ -3,8 +3,6 @@ Output formatting utilities for Salt Docs CLI.
 Provides tree-structured output with icons, colors, and timing.
 """
 
-import time
-
 
 # ANSI 256-color codes (work on both light and dark backgrounds)
 class Colors:
@@ -264,4 +262,23 @@ def print_error_general(error):
     print(f"{Colors.MEDIUM_GRAY}  {str(error)}{Colors.RESET}")
     print(
         f"{Colors.MEDIUM_GRAY}  Please check your configuration and try again.{Colors.RESET}"
+    )
+
+
+def print_update_notification(current_version: str, latest_version: str):
+    """
+    Print update notification message at the end of successful execution.
+
+    Args:
+        current_version: Currently installed version
+        latest_version: Latest available version from PyPI
+    """
+    print()
+    print(
+        f"{Colors.WHITE}{Icons.INFO} Update available: "
+        f"{Colors.MEDIUM_GRAY}v{current_version}"
+        f"{Colors.WHITE} → {Colors.WHITE}v{latest_version}{Colors.RESET}"
+    )
+    print(
+        f"{Colors.MEDIUM_GRAY}  To upgrade, run: {Colors.WHITE}pip install --upgrade salt-docs{Colors.RESET}"
     )

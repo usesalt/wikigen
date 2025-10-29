@@ -74,7 +74,7 @@ def crawl_github_files(
             print(f"Cloning SSH repo {repo_url} to temp dir {tmpdirname} ...")
             try:
                 repo = git.Repo.clone_from(repo_url, tmpdirname)
-            except Exception as e:
+            except (git.GitCommandError, git.GitError, OSError, IOError) as e:
                 print(f"Error cloning repo: {e}")
                 return {"files": {}, "stats": {"error": str(e)}}
 
@@ -118,7 +118,7 @@ def crawl_github_files(
                             Icons.DOWNLOAD,
                             indent=2,
                         )
-                    except Exception as e:
+                    except (IOError, OSError, UnicodeDecodeError, PermissionError) as e:
                         print_operation(f"{rel_path}: {e}", Icons.ERROR, indent=2)
 
             return {

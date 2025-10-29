@@ -2,6 +2,8 @@ from google import genai
 import os
 import logging
 import json
+import tempfile
+from pathlib import Path
 from datetime import datetime
 
 # Configure logging
@@ -21,24 +23,34 @@ file_handler.setFormatter(
 )
 logger.addHandler(file_handler)
 
-# Simple cache configuration
-cache_file = "llm_cache.json"
+
+def get_cache_file_path() -> Path:
+    """Get the cache file path in the Salt Docs directory."""
+    try:
+        from ..config import DEFAULT_OUTPUT_DIR
+
+        DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        return DEFAULT_OUTPUT_DIR / "llm_cache.json"
+    except ImportError:
+        # Fallback to current directory if config module not available
+        return Path("llm_cache.json")
 
 
-# By default, we Google Gemini 2.5 pro, as it shows great performance for code understanding
+# By default, we Google Gemini 2.5 Flash as it shows great cost and performance benefits for code understanding
 def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
     # Log the prompt
     logger.info(f"PROMPT: {prompt}")
 
-    # Check cache if enabled
+    # Load cache once if enabled
+    cache = {}
+    cache_file = None
     if use_cache:
-        # Load cache from disk
-        cache = {}
-        if os.path.exists(cache_file):
+        cache_file = get_cache_file_path()
+        if cache_file.exists():
             try:
                 with open(cache_file, "r", encoding="utf-8") as f:
                     cache = json.load(f)
-            except Exception as e:
+            except (json.JSONDecodeError, IOError, OSError) as e:
                 logger.warning(f"Failed to load cache, starting with empty cache: {e}")
 
         # Return from cache if exists
@@ -74,24 +86,36 @@ def call_llm(prompt: str, use_cache: bool = True, api_key: str = None) -> str:
     # Log the response
     logger.info(f"RESPONSE: {response_text}")
 
-    # Update cache if enabled
+    # Update cache if enabled (reuse the cache dict we already loaded)
     if use_cache:
-        # Load cache again to avoid overwrites
-        cache = {}
-        if os.path.exists(cache_file):
-            try:
-                with open(cache_file, "r", encoding="utf-8") as f:
-                    cache = json.load(f)
-            except Exception as e:
-                logger.warning(f"Failed to load cache: {e}")
-
-        # Add to cache and save
+        # Add to cache and save using atomic write to prevent race conditions
         cache[prompt] = response_text
+        # cache_file already set from earlier
+        tmp_path = None
         try:
-            with open(cache_file, "w", encoding="utf-8") as f:
-                json.dump(cache, f)
-        except Exception as e:
+            # Atomic write: write to temp file, then rename (atomic on most filesystems)
+            # This prevents corruption if multiple processes write simultaneously
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=cache_file.parent,
+                delete=False,
+                suffix=".tmp",
+            ) as tmp_file:
+                json.dump(cache, tmp_file, indent=2)
+                tmp_path = Path(tmp_file.name)
+
+            # Atomic rename (replaces existing file atomically on POSIX and Windows)
+            tmp_path.replace(cache_file)
+        except (IOError, OSError, PermissionError) as e:
             logger.error(f"Failed to save cache: {e}")
+            # Clean up temp file if rename failed
+            if tmp_path is not None:
+                try:
+                    if tmp_path.exists():
+                        tmp_path.unlink()
+                except Exception:
+                    pass  # Ignore cleanup errors
 
     return response_text
 
