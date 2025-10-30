@@ -21,7 +21,6 @@ class HelpColors:
 class HelpIcons:
     """Unicode icons for help sections."""
 
-    LOGO = "🧂"
     INFO = "◆"
     USAGE = "◎"
     SOURCE = "◎"

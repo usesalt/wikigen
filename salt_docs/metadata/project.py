@@ -9,7 +9,7 @@ import datetime
 PROJECT_NAME = "salt-docs"
 AUTHOR_NAME = "Mithun Ramesh"
 ORGANIZATION = "USESALT.CO"
-DESCRIPTION = "Wiki genertor designed for nerds, by nerds."
+DESCRIPTION = "Wiki's for nerds, by nerds"
 
 # Repository info
 REPOSITORY_URL = "https://github.com/convolution-labs/salt-docs-cli"
