@@ -6,7 +6,7 @@ import pytest
 import time
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import patch, MagicMock
 
 import sys
 

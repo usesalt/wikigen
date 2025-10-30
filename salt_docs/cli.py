@@ -46,6 +46,12 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "config":
         handle_config_command()
         return
+    
+    # Handle 'mcp' subcommand
+    if len(sys.argv) > 1 and sys.argv[1] == "mcp":
+        from .mcp.server import run_mcp_server
+        run_mcp_server()
+        return
 
     # Check if config exists, if not, prompt user to run init
     if not check_config_exists():

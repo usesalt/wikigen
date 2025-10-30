@@ -251,3 +251,22 @@ def update_last_check_timestamp() -> None:
     config = load_config()
     config["last_update_check"] = time.time()
     save_config(config)
+
+
+def get_output_dir() -> Path:
+    """
+    Get the output directory from config or use default.
+    
+    Returns:
+        Path to the output directory
+    """
+    try:
+        config = load_config()
+        output_dir_str = config.get("output_dir")
+        if output_dir_str:
+            return Path(output_dir_str).expanduser()
+    except Exception:
+        # If config loading fails, fallback to default
+        pass
+    
+    return DEFAULT_OUTPUT_DIR

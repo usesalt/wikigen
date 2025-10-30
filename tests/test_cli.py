@@ -4,9 +4,8 @@ Basic tests for Salt Docs CLI.
 
 import pytest
 import tempfile
-import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # Import the CLI module
 import sys

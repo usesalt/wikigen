@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2025-01-28
+
+### Added
+- **MCP (Model Context Protocol) Server** - Full MCP server implementation for AI assistant integration
+- **Fast Machine-Wide Search** - SQLite FTS5-powered search across indexed markdown files
+- **4 MCP Tools**:
+  - `list_docs` - List all documentation files from output directory
+  - `search_docs` - Fast full-text search across indexed directories
+  - `get_docs` - Fetch documentation by resource name or absolute file path
+  - `index_directories` - Manually index directories for search
+- **MCP Setup Documentation** - Complete setup instructions for Cursor, Claude Desktop, and Continue.dev
+- **Comprehensive Test Suite** - Full test coverage for all MCP tools and search functionality
+- **Auto-indexing** - Automatically indexes output directory on first search
+
+### Changed
+- Renamed `doc_discovery.py` → `output_resources.py` for clearer purpose
+- Renamed `file_indexer.py` → `search_index.py` for better organization
+- Moved `get_output_dir()` to `config.py` for better code organization
+- Consolidated from 6 MCP tools to 4 tools (merged functionality, removed redundancy)
+- Enhanced `get_docs()` to accept both resource names and absolute file paths
+- Updated README with MCP setup instructions and improved architecture diagram
+
+### Removed
+- Removed redundant `doc_id()` tool (functionality merged into `search_docs`)
+- Removed redundant `get_file_content()` tool (merged into `get_docs`)
+- Cleaned up unused imports across all MCP and test files
+
+### Improved
+- Code organization and naming conventions
+- Search performance with SQLite FTS5 indexing
+- Test coverage and code quality
+- Developer experience with better file organization
+- AI assistant integration capabilities
+
 ## [0.1.6] - 2025-01-28
 
 ### Added
