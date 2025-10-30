@@ -1,5 +1,4 @@
 import re
-from typing import List, Tuple
 
 
 def adjust_heading_levels(content: str, shift: int) -> str:
@@ -20,17 +19,15 @@ def adjust_heading_levels(content: str, shift: int) -> str:
     lines = content.split("\n")
     result_lines = []
     in_code_block = False
-    code_block_marker = None
+    # Track only in/out of code blocks; no need to store the marker
 
     for line in lines:
         # Track code block state
         if line.strip().startswith("```"):
             if not in_code_block:
                 in_code_block = True
-                code_block_marker = line.strip()[:3]  # Capture ``` or ```python etc
             else:
                 in_code_block = False
-                code_block_marker = None
             result_lines.append(line)
             continue
 

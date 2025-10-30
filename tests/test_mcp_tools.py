@@ -24,13 +24,12 @@ def test_server_initialization():
         print("✓ Server initialized successfully")
         print("✓ Module loads without errors")
         print()
-        return True
     except Exception as e:
         print(f"✗ Error initializing server: {e}")
         import traceback
 
         traceback.print_exc()
-        return False
+        raise
 
 
 def test_list_docs():
@@ -51,7 +50,6 @@ def test_list_docs():
     )
     print("✓ list_docs tool works correctly")
     print()
-    return result
 
 
 def test_get_docs():
@@ -116,8 +114,6 @@ def test_get_docs():
     except (ValueError, RuntimeError) as e:
         print(f"✓ Correctly raised error: {type(e).__name__}")
     print()
-
-    return True
 
 
 def test_search_docs():
@@ -187,8 +183,6 @@ def test_search_docs():
     except Exception as e:
         print(f"✗ Empty query failed: {e}")
     print()
-
-    return True
 
 
 def test_index_directories():
@@ -267,8 +261,6 @@ def test_index_directories():
     print(f"  Total directories: {stats['total_directories']}")
     print(f"  Total size: {stats['total_size']:,} bytes")
     print()
-
-    return True
 
 
 def main():

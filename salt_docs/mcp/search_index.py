@@ -302,15 +302,18 @@ class FileIndexer:
                 if not query or not query.strip():
                     fts_query = "*"  # Match all
                 else:
-                    # Escape special characters and use OR for multi-word queries
-                    # FTS5 keywords that need escaping: AND, OR, NOT
+                    # Use prefix matching for partial word matches
+                    # FTS5 supports prefix matching with token* syntax
                     words = query.strip().split()
                     escaped_words = []
                     for word in words:
-                        # Remove quotes if present and re-add them to ensure proper escaping
-                        word = word.strip('"')
+                        word = word.strip()
                         if word:
-                            escaped_words.append(f'"{word}"')
+                            # Use prefix matching (*) to match partial tokens
+                            # This allows "test" to match "test1", "test2", etc.
+                            # Remove any existing * to avoid double wildcards
+                            word = word.rstrip("*")
+                            escaped_words.append(f"{word}*")
                     fts_query = " OR ".join(escaped_words) if escaped_words else "*"
 
                 # Build SQL query
@@ -338,7 +341,8 @@ class FileIndexer:
                     cursor.execute(sql, (fts_query, limit))
 
                 results = []
-                for row in cursor.fetchall():
+                rows = cursor.fetchall()
+                for row in rows:
                     results.append(
                         {
                             "id": row["id"],
@@ -350,6 +354,45 @@ class FileIndexer:
                             "modified_time": row["modified_time"],
                         }
                     )
+
+                # Fallback: if FTS returns no matches, try LIKE on filenames/paths
+                if not results and query and query.strip():
+                    like = f"%{query.strip()}%"
+                    if directory_filter:
+                        cursor.execute(
+                            """
+                            SELECT id, file_path, file_name, resource_name,
+                                   directory, size, modified_time
+                            FROM files
+                            WHERE (file_name LIKE ? OR file_path LIKE ?)
+                              AND directory LIKE ?
+                            LIMIT ?
+                            """,
+                            (like, like, f"%{directory_filter}%", limit),
+                        )
+                    else:
+                        cursor.execute(
+                            """
+                            SELECT id, file_path, file_name, resource_name,
+                                   directory, size, modified_time
+                            FROM files
+                            WHERE file_name LIKE ? OR file_path LIKE ?
+                            LIMIT ?
+                            """,
+                            (like, like, limit),
+                        )
+                    for row in cursor.fetchall():
+                        results.append(
+                            {
+                                "id": row["id"],
+                                "file_path": row["file_path"],
+                                "file_name": row["file_name"],
+                                "resource_name": row["resource_name"],
+                                "directory": row["directory"],
+                                "size": row["size"],
+                                "modified_time": row["modified_time"],
+                            }
+                        )
 
                 return results
             finally:

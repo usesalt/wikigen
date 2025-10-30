@@ -103,7 +103,6 @@ def test_file_indexer_basic():
     print("\n" + "=" * 60)
     print("✓ All SearchIndex basic tests passed!")
     print("=" * 60)
-    return True
 
 
 def test_file_indexer_search():
@@ -158,7 +157,6 @@ def test_file_indexer_search():
     print("\n" + "=" * 60)
     print("✓ All search tests passed!")
     print("=" * 60)
-    return True
 
 
 def main():
