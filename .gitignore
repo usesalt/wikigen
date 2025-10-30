@@ -10,6 +10,7 @@ build/
 out/
 *.pyc
 __pycache__/
+.pytest_cache/
 
 # Python package build artifacts
 *.egg-info/
