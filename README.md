@@ -1,6 +1,4 @@
-# Salt Docs
-
-Wiki's for nerds, by nerds
+![Salt Docs](assets/saltdocs.jpg)
 
 ## How it works
 
