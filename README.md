@@ -5,23 +5,35 @@ Wiki's for nerds, by nerds
 ## How it works
 
 ```mermaid
-flowchart TD
-    GH[GitHub] --> Pipeline
-    Local[Local Dir] --> Pipeline
-
-    subgraph Pipeline["Processing Pipeline"]
-        Crawl[Crawl & Analyze = Extract + Parse] --> Identify[LLM Identify = Abstractions]
-        Identify --> Generate[Generate Wiki's = Markdown Output]
+flowchart LR
+    subgraph Input["Code Source"]
+        Source1[GitHub Repository]
+        Source2[Local Directory]
     end
 
-    Generate --> Docs[Wiki Files]
-    Docs --> Server[MCP Server]
-    Server --> Tools["Tools: list_docs | doc_id | get_docs"]
+    subgraph Pipeline["Salt Docs Pipeline"]
+        Crawl[Crawl & Analyze]
+        Identify[LLM Identify Abstractions]
+        Generate[Generate Markdown Docs]
+    end
 
-    Tools --> Cursor[Cursor]
-    Tools --> Claude[Claude]
-    Tools --> Continue[LLM's]
+    subgraph Output["Local Wiki"]
+        Docs[Markdown Files]
+        MCP[MCP Server]
+    end
 
+    subgraph Assistants["AI Assistants"]
+        Cursor[Cursor]
+        Claude[Claude]
+        Continue[Continue]
+    end
+
+    Source1 --> Crawl
+    Source2 --> Crawl
+    Crawl --> Identify --> Generate --> Docs --> MCP
+    MCP --> Cursor
+    MCP --> Claude
+    MCP --> Continue
 ```
 
 ## Installation
@@ -129,6 +141,7 @@ salt-docs config set use_cache false
 salt-docs config set output_dir /custom/path
 ```
 
+---
 ## MCP Server Setup
 
 Salt Docs includes an MCP (Model Context Protocol) server that exposes your generated documentation to AI assistants in IDEs like Cursor, Continue.dev, and Claude Desktop.
