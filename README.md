@@ -43,8 +43,8 @@ pip install salt-docs
 
 ### Option 2: Install from source
 ```bash
-git clone https://github.com/itsjustmithun/salt-docs-cli.git
-cd salt-docs-cli
+git clone https://github.com/usesalt/salt-docs.git
+cd salt-docs
 pip install -e .
 ```
 

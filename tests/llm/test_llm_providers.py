@@ -58,23 +58,37 @@ def test_provider_registry():
     for provider_id in providers:
         needs_key = requires_api_key(provider_id)
         provider_info = get_provider_info(provider_id)
-        print(f"   {provider_id}: {'Requires API key' if needs_key else 'No API key needed'}")
-        
+        print(
+            f"   {provider_id}: {'Requires API key' if needs_key else 'No API key needed'}"
+        )
+
         if provider_id == "ollama":
             assert not needs_key, "Ollama should not require an API key"
-            assert provider_info.get("keyring_key") is None, "Ollama should not have keyring_key"
-            assert provider_info.get("api_key_env") is None, "Ollama should not have api_key_env"
+            assert (
+                provider_info.get("keyring_key") is None
+            ), "Ollama should not have keyring_key"
+            assert (
+                provider_info.get("api_key_env") is None
+            ), "Ollama should not have api_key_env"
         else:
             assert needs_key, f"{provider_id} should require an API key"
-            assert provider_info.get("keyring_key"), f"{provider_id} should have keyring_key"
-            assert provider_info.get("api_key_env"), f"{provider_id} should have api_key_env"
+            assert provider_info.get(
+                "keyring_key"
+            ), f"{provider_id} should have keyring_key"
+            assert provider_info.get(
+                "api_key_env"
+            ), f"{provider_id} should have api_key_env"
     print("   ✓ API key requirements correct")
 
     # Test 5: Ollama special configuration
     print("\n5. Testing Ollama special configuration:")
     ollama_info = get_provider_info("ollama")
-    assert ollama_info.get("base_url") == "http://localhost:11434", "Ollama base URL should be set"
-    assert ollama_info.get("base_url_env") == "OLLAMA_BASE_URL", "Ollama base URL env var should be set"
+    assert (
+        ollama_info.get("base_url") == "http://localhost:11434"
+    ), "Ollama base URL should be set"
+    assert (
+        ollama_info.get("base_url_env") == "OLLAMA_BASE_URL"
+    ), "Ollama base URL env var should be set"
     print("   ✓ Ollama configuration correct")
 
     print("\n" + "=" * 60)
@@ -89,22 +103,31 @@ def test_provider_info_structure():
     print("=" * 60)
 
     required_fields = ["display_name", "recommended_models"]
-    
+
     for provider_id, provider_info in LLM_PROVIDERS.items():
         print(f"\nChecking {provider_id}:")
         for field in required_fields:
-            assert field in provider_info, f"{provider_id} missing required field: {field}"
+            assert (
+                field in provider_info
+            ), f"{provider_id} missing required field: {field}"
             print(f"   ✓ Has {field}")
-        
+
         # Check API key related fields
         if provider_info.get("requires_api_key", True):
-            assert provider_info.get("keyring_key"), f"{provider_id} missing keyring_key"
-            assert provider_info.get("api_key_env"), f"{provider_id} missing api_key_env"
+            assert provider_info.get(
+                "keyring_key"
+            ), f"{provider_id} missing keyring_key"
+            assert provider_info.get(
+                "api_key_env"
+            ), f"{provider_id} missing api_key_env"
             print(f"   ✓ Has API key configuration")
         else:
-            assert provider_info.get("keyring_key") is None or provider_info.get("keyring_key") is None
+            assert (
+                provider_info.get("keyring_key") is None
+                or provider_info.get("keyring_key") is None
+            )
             print(f"   ✓ Correctly marked as no API key needed")
-    
+
     print("\n" + "=" * 60)
     print("✓ All provider info structure tests passed!")
     print("=" * 60)
@@ -123,11 +146,13 @@ def test_model_selection():
         print(f"   {provider_id}:")
         for i, model in enumerate(models, 1):
             print(f"      {i}) {model}")
-    
+
     # Test 2: Verify Ollama models
     print("\n2. Testing Ollama models:")
     ollama_models = get_recommended_models("ollama")
-    assert "llama3.2" in ollama_models or "llama3.1" in ollama_models, "Should have llama models"
+    assert (
+        "llama3.2" in ollama_models or "llama3.1" in ollama_models
+    ), "Should have llama models"
     print("   ✓ Ollama models retrieved")
 
     # Test 3: Custom model entry (simulated)
@@ -157,6 +182,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ Provider registry test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -166,6 +192,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ Provider info structure test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -175,6 +202,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ Model selection test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     # Summary
@@ -192,4 +220,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

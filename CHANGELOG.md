@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2025-11-03
+
+### Added
+- **Documentation Mode Selection** - Choose between minimal and comprehensive documentation output
+  - **Minimal Mode** - Shorter, more direct documentation focused on key facts and intent
+  - **Comprehensive Mode** - Full detailed documentation with extensive explanations and examples
+- **New CLI Argument**: `--mode` - Override documentation mode for a single run
+  - Options: `minimal` or `comprehensive`
+  - Example: `salt-docs --repo <url> --mode comprehensive`
+- **Configuration Field**: `documentation_mode` - Set default documentation mode in config
+  - Default: `minimal`
+  - Can be set via `salt-docs config set documentation-mode <mode>`
+  - Interactive selection during `salt-docs init` setup wizard
+- **Comprehensive Test Suite** - Full test coverage for documentation mode configuration
+
+### Changed
+- Documentation generation now adapts prompts based on selected mode
+- Minimal mode uses shorter, more concise prompts to reduce token usage
+- Comprehensive mode retains original detailed prompts for thorough documentation
+- Code formatting with black for consistency
+
+### Improved
+- Better control over documentation verbosity and detail level
+- Reduced costs for users who prefer concise documentation (minimal mode)
+- More flexible documentation generation to match user needs
+- Code quality and formatting consistency
+
 ## [0.2.0] - 2025-01-29
 
 ### Added

@@ -274,6 +274,22 @@ def init_config() -> None:
         except ValueError:
             max_abstractions = 5
 
+    # Documentation Mode
+    print_input_prompt(
+        "Documentation Mode (minimal/comprehensive)",
+        Icons.CONFIG,
+        is_required=False,
+        default_value="minimal",
+    )
+    documentation_mode_input = input().strip().lower()
+    if not documentation_mode_input:
+        documentation_mode = "minimal"
+    elif documentation_mode_input in ["minimal", "comprehensive"]:
+        documentation_mode = documentation_mode_input
+    else:
+        print(f"⚠ Warning: Invalid mode '{documentation_mode_input}'. Using 'minimal'.")
+        documentation_mode = "minimal"
+
     # Build configuration
     config = {
         "llm_provider": llm_provider,
@@ -285,6 +301,7 @@ def init_config() -> None:
         "use_cache": DEFAULT_CONFIG["use_cache"],
         "include_patterns": DEFAULT_CONFIG["include_patterns"],
         "exclude_patterns": DEFAULT_CONFIG["exclude_patterns"],
+        "documentation_mode": documentation_mode,
     }
 
     # Store Ollama base URL if custom
@@ -381,6 +398,7 @@ def merge_config_with_args(config: Dict[str, Any], args) -> Dict[str, Any]:
         "include": "include_patterns",
         "exclude": "exclude_patterns",
         "token": "github_token",
+        "mode": "documentation_mode",
     }
 
     for arg_name, config_key in arg_mapping.items():

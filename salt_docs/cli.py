@@ -97,6 +97,8 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
         "use_cache": final_config["use_cache"],
         # Add max_abstraction_num parameter
         "max_abstraction_num": final_config["max_abstractions"],
+        # Add documentation_mode parameter
+        "documentation_mode": final_config.get("documentation_mode", "minimal"),
         # Outputs will be populated by the nodes
         "files": [],
         "abstractions": [],
@@ -308,6 +310,13 @@ def main():
                 default=config.get("max_abstractions", 10),
                 help="Maximum number of abstractions to identify (default: from config)",
             )
+            # Add documentation mode parameter
+            parser.add_argument(
+                "--mode",
+                choices=["minimal", "comprehensive"],
+                default=None,
+                help="Documentation mode (default: from config)",
+            )
 
             args = parser.parse_args()
 
@@ -409,6 +418,13 @@ def main():
         type=int,
         default=config.get("max_abstractions", 10),
         help="Maximum number of abstractions to identify (default: from config)",
+    )
+    # Add documentation mode parameter
+    parser.add_argument(
+        "--mode",
+        choices=["minimal", "comprehensive"],
+        default=None,
+        help="Documentation mode (default: from config)",
     )
 
     args = parser.parse_args()
@@ -525,6 +541,7 @@ def show_config():
     print(f"  Max Abstractions: {config.get('max_abstractions', 'Not set')}")
     print(f"  Max File Size: {config.get('max_file_size', 'Not set')}")
     print(f"  Use Cache: {config.get('use_cache', 'Not set')}")
+    print(f"  Documentation Mode: {config.get('documentation_mode', 'Not set')}")
 
     # Check if API keys are available
     try:

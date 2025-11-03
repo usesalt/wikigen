@@ -122,6 +122,10 @@ def _print_options_section():
             "--max-abstractions N",
             "Maximum number of abstractions to identify (default: from config)",
         ),
+        (
+            "--mode MODE",
+            "Documentation mode: minimal or comprehensive (default: from config)",
+        ),
     ]
 
     for i, (option, description) in enumerate(options):

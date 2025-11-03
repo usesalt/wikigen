@@ -28,8 +28,12 @@ def test_config_defaults():
 
     assert "llm_provider" in DEFAULT_CONFIG, "llm_provider should be in DEFAULT_CONFIG"
     assert "llm_model" in DEFAULT_CONFIG, "llm_model should be in DEFAULT_CONFIG"
-    assert DEFAULT_CONFIG["llm_provider"] == "gemini", "Default provider should be gemini"
-    assert DEFAULT_CONFIG["llm_model"] == "gemini-2.5-flash", "Default model should be gemini-2.5-flash"
+    assert (
+        DEFAULT_CONFIG["llm_provider"] == "gemini"
+    ), "Default provider should be gemini"
+    assert (
+        DEFAULT_CONFIG["llm_model"] == "gemini-2.5-flash"
+    ), "Default model should be gemini-2.5-flash"
     print("✓ Default configuration correct")
 
 
@@ -114,7 +118,9 @@ def test_ollama_special_case():
     print("✓ Ollama does not require API key")
 
     # Test 2: Base URL configured
-    assert provider_info.get("base_url") == "http://localhost:11434", "Should have base URL"
+    assert (
+        provider_info.get("base_url") == "http://localhost:11434"
+    ), "Should have base URL"
     print(f"✓ Ollama base URL: {provider_info.get('base_url')}")
 
     # Test 3: Recommended models exist
@@ -125,11 +131,15 @@ def test_ollama_special_case():
         print(f"   - {model}")
 
     # Test 4: Keyring key should be None
-    assert provider_info.get("keyring_key") is None, "Ollama should not have keyring_key"
+    assert (
+        provider_info.get("keyring_key") is None
+    ), "Ollama should not have keyring_key"
     print("✓ Ollama keyring_key correctly set to None")
 
     # Test 5: API key env should be None
-    assert provider_info.get("api_key_env") is None, "Ollama should not have api_key_env"
+    assert (
+        provider_info.get("api_key_env") is None
+    ), "Ollama should not have api_key_env"
     print("✓ Ollama api_key_env correctly set to None")
 
     print("\n" + "=" * 60)
@@ -153,6 +163,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ Config defaults test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -162,6 +173,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ Config helpers test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -171,6 +183,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ API key retrieval test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     try:
@@ -180,6 +193,7 @@ def main():
         tests_failed += 1
         print(f"\n✗ Ollama special case test failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     # Summary
@@ -197,4 +211,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

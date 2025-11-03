@@ -588,6 +588,9 @@ class WriteComponents(BatchNode):
         files_data = shared["files"]  # List of (path, content) tuples
         language = shared.get("language", "english")
         use_cache = shared.get("use_cache", True)  # Get use_cache flag, default to True
+        documentation_mode = shared.get(
+            "documentation_mode", "minimal"
+        )  # Get documentation_mode, default to minimal
 
         # Get already written components to provide context
         # We store them temporarily during the batch run, not in shared memory yet
@@ -661,6 +664,7 @@ class WriteComponents(BatchNode):
                         "next_component": next_component,
                         "language": language,
                         "use_cache": use_cache,
+                        "documentation_mode": documentation_mode,
                     }
                 )
             else:
@@ -684,6 +688,9 @@ class WriteComponents(BatchNode):
         project_name = item.get("project_name")
         language = item.get("language", "english")
         use_cache = item.get("use_cache", True)  # Read use_cache from item
+        documentation_mode = item.get(
+            "documentation_mode", "minimal"
+        )  # Read documentation_mode from item
 
         # Prepare file context string from the map
         file_context_str = "\n\n".join(
@@ -719,7 +726,54 @@ class WriteComponents(BatchNode):
             )
             tone_note = f" (appropriate for {lang_cap} readers)"
 
-        prompt = f"""
+        # Build prompt based on mode
+        if documentation_mode == "minimal":
+            # Minimal mode: shorter, more direct instructions
+            prompt = f"""
+{language_instruction}Write short and concise intent-focused documentation. Be brief but keep all critical info: architecture, design, components, integrations. Focus on key facts and intent. Avoid verbosity. Keep structure but be direct.
+
+Write technical documentation (in Markdown format) for engineers working with the component "{abstraction_name}" in the project `{project_name}`. This is Component {component_num}.
+
+Component/Concept Details{concept_details_note}:
+- Name: {abstraction_name}
+- Description:
+{abstraction_description}
+
+Complete Documentation Structure{structure_note}:
+{item["full_component_listing"]}
+
+Context from previous components{prev_summary_note}:
+{previous_components_summary if previous_components_summary else "This is the first component."}
+
+Relevant Code Snippets (Code itself remains unchanged):
+{file_context_str if file_context_str else "No specific code snippets provided for this abstraction."}
+
+Instructions for the documentation (Generate content in {language.capitalize()} unless specified otherwise):
+- Start with clear heading: `# Component {component_num}: {abstraction_name}`. Use the provided component name.
+
+- If not first component, reference previous component{instruction_lang_note} with Markdown link{link_lang_note}.
+
+- Why it exists{instruction_lang_note}: core responsibilities, purpose in architecture.
+
+- What it does{instruction_lang_note}: key responsibilities, how it works, integration points.
+
+- Avoid code blocks if not critical. If code blocks are needed, keep them BELOW 5 lines. Simplify aggressively. Use comments{code_comment_note} to skip non-essential details. Explain after each block{instruction_lang_note}. No imports/packages.
+
+- Internal implementation{instruction_lang_note}: step-by-step walkthrough (code-light). Use simple sequenceDiagram (max 5 participants). If participant name has space: `participant QP as Query Processing`. {mermaid_lang_note}.
+
+- IMPORTANT: Link to other components: [Component Title](filename.md). Use Complete Documentation Structure for filename/title{link_lang_note}.
+
+- Use mermaid diagrams for complex concepts (```mermaid``` format). {mermaid_lang_note}.
+
+- Key takeaways{instruction_lang_note}: what it handles, common patterns, integration points. Link to next component if exists{link_lang_note}.
+
+- Tone: technical and precise{tone_note}.
+
+- Output *only* Markdown content (DONT NEED ```markdown``` tags).
+"""
+        else:
+            # Comprehensive mode: ORIGINAL prompt unchanged
+            prompt = f"""
 {language_instruction}Write technical documentation (in Markdown format) for engineers working with the component "{abstraction_name}" in the project `{project_name}`. This is Component {component_num}.
 
 Component/Concept Details{concept_details_note}:
@@ -879,7 +933,9 @@ class GenerateDocContent(Node):
                 combined += "\n\n---\n\n"
 
         # Add separator at the bottom
-        combined += "\n\n---\n\nWiki created by [SALT](https://usesalt.co)\n"
+        combined += (
+            "\n\n---\n\nWiki created by [SALT](https://github.com/usesalt/salt-docs)\n"
+        )
 
         return combined
 
