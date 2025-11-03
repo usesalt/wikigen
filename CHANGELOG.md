@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.1] - 2025-11-03
+## [0.2.2] - 2025-11-03
 
 ### Added
 - **Documentation Mode Selection** - Choose between minimal and comprehensive documentation output
