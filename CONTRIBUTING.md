@@ -6,8 +6,8 @@ Thank you for your interest in contributing to Salt Docs.
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/convolution-labs/salt-docs-cli.git
-cd salt-docs-cli
+git clone https://github.com/usesalt/salt-docs.git
+cd salt-docs
 ```
 
 2. Install development dependencies:

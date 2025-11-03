@@ -36,7 +36,7 @@ flowchart TD
 
 ## Component 1: Local Configuration Management
 
-This component is the bedrock for personalizing and securing the `salt-docs-cli` experience for every engineer. In complex development environments, engineers juggle numerous projects, often requiring unique settings, API keys, and preferences. The **Local Configuration Management** component addresses the critical need for a robust, secure, and user-friendly system to manage all user-specific operational parameters, ensuring both ease of use and stringent privacy.
+This component is the bedrock for personalizing and securing the `salt-docs` experience for every engineer. In complex development environments, engineers juggle numerous projects, often requiring unique settings, API keys, and preferences. The **Local Configuration Management** component addresses the critical need for a robust, secure, and user-friendly system to manage all user-specific operational parameters, ensuring both ease of use and stringent privacy.
 
 ### Core Responsibilities
 
@@ -62,7 +62,7 @@ Adhering to operating system conventions is crucial for maintainability and user
 *   On **macOS and Linux**, configurations are stored under `~/.config/saltdocs/config.json` or `$XDG_CONFIG_HOME/saltdocs/config.json`.
 *   On **Windows**, it utilizes `%APPDATA%\saltdocs\config.json`.
 
-This ensures that `salt-docs-cli` integrates cleanly with the user's environment. The `CHANGELOG.md` reflects this significant improvement in version `0.1.8`.
+This ensures that `salt-docs` integrates cleanly with the user's environment. The `CHANGELOG.md` reflects this significant improvement in version `0.1.8`.
 
 #### Interactive Setup Wizard
 
@@ -197,7 +197,7 @@ Interaction with the system keyring is typically abstracted through a dedicated 
 
 ```python
 # Part of a larger module, depends on the 'keyring' library
-SERVICE_NAME = "salt-docs-cli"
+SERVICE_NAME = "salt-docs"
 
 def get_secret(key_name: str) -> str | None:
     """Retrieves a secret from the system keyring."""
@@ -309,7 +309,7 @@ salt-docs config set output_dir /path/to/my/custom/docs
 
 ### Key Takeaways
 
-The **Local Configuration Management** component is essential for providing a personalized, secure, and user-friendly experience within `salt-docs-cli`. It effectively:
+The **Local Configuration Management** component is essential for providing a personalized, secure, and user-friendly experience within `salt-docs`. It effectively:
 
 *   **Secures sensitive credentials** through system keyring integration.
 *   **Manages user preferences** in OS-appropriate file system locations.
@@ -323,7 +323,7 @@ This component forms the foundational layer upon which other features like the [
 
 ## Component 2: Documentation Generation Pipeline
 
-Building upon the foundational settings established by the [Local Configuration Management](01_local_configuration_management_.md) component, the **Documentation Generation Pipeline** is the core engine of `salt-docs-cli`. It transforms raw source code into intelligent, structured, and human-readable documentation.
+Building upon the foundational settings established by the [Local Configuration Management](01_local_configuration_management_.md) component, the **Documentation Generation Pipeline** is the core engine of `salt-docs`. It transforms raw source code into intelligent, structured, and human-readable documentation.
 
 ### Core Responsibilities
 
@@ -517,7 +517,7 @@ Engineers interact with the Documentation Generation Pipeline primarily through 
 
 #### 1. Generating Docs for a GitHub Repository
 
-To generate documentation for a public GitHub repository, `salt-docs-cli` will clone it temporarily, process it, and then delete the temporary clone. Your GitHub token (if configured via `salt-docs init` or `salt-docs config update-github-token`) will be used for private repositories.
+To generate documentation for a public GitHub repository, `salt-docs` will clone it temporarily, process it, and then delete the temporary clone. Your GitHub token (if configured via `salt-docs init` or `salt-docs config update-github-token`) will be used for private repositories.
 
 ```bash
 salt-docs --repo https://github.com/my-org/my-project
@@ -550,7 +550,7 @@ This example shows how to direct the output to a custom path, generate documenta
 
 ### Key Takeaways
 
-The **Documentation Generation Pipeline** is the dynamic heart of `salt-docs-cli`, effectively addressing the challenge of maintaining current and comprehensive codebase documentation.
+The **Documentation Generation Pipeline** is the dynamic heart of `salt-docs`, effectively addressing the challenge of maintaining current and comprehensive codebase documentation.
 
 *   It orchestrates the **end-to-end process** from source code ingestion to formatted Markdown output.
 *   It leverages **LLMs for intelligent analysis**, identifying core abstractions and their context.
@@ -565,7 +565,7 @@ This component transforms your codebase into an accessible and queryable documen
 
 ## Component 3: Fast Documentation Search
 
-Building upon the structured documentation produced by the [Documentation Generation Pipeline](02_documentation_generation_pipeline_.md), the **Fast Documentation Search** component introduces a critical capability: the ability to rapidly locate relevant information across all generated Markdown files. In large codebases with extensive documentation, finding specific details quickly is paramount for both human engineers and AI assistants. This component ensures that the rich context generated by `salt-docs-cli` is not just available, but also highly accessible.
+Building upon the structured documentation produced by the [Documentation Generation Pipeline](02_documentation_generation_pipeline_.md), the **Fast Documentation Search** component introduces a critical capability: the ability to rapidly locate relevant information across all generated Markdown files. In large codebases with extensive documentation, finding specific details quickly is paramount for both human engineers and AI assistants. This component ensures that the rich context generated by `salt-docs` is not just available, but also highly accessible.
 
 ### Core Responsibilities
 
@@ -740,7 +740,7 @@ The AI would then translate this into an MCP call:
   }
 }
 ```
-The underlying `search_documentation` function in `salt-docs-cli` would execute, returning relevant Markdown files and snippets.
+The underlying `search_documentation` function in `salt-docs` would execute, returning relevant Markdown files and snippets.
 
 #### 2. Manually Indexing Directories
 
@@ -769,19 +769,19 @@ This component ensures that the effort put into generating detailed documentatio
 
 ## Component 4: MCP Server & AI Integration
 
-Building directly on the structured and searchable documentation provided by the [Fast Documentation Search](03_fast_documentation_search_.md) component, the **MCP Server & AI Integration** is the crucial bridge that connects your meticulously generated `salt-docs-cli` context to the power of modern AI coding assistants. In an era where AI is becoming an indispensable part of the development workflow, enabling these assistants to understand and reference project-specific nuances is paramount.
+Building directly on the structured and searchable documentation provided by the [Fast Documentation Search](03_fast_documentation_search_.md) component, the **MCP Server & AI Integration** is the crucial bridge that connects your meticulously generated `salt-docs` context to the power of modern AI coding assistants. In an era where AI is becoming an indispensable part of the development workflow, enabling these assistants to understand and reference project-specific nuances is paramount.
 
 ### Core Responsibilities
 
-The primary goal of the MCP Server is to make the `salt-docs-cli` knowledge base directly queryable by AI coding assistants running in the engineer's local environment. It addresses the common problem where AI, despite its capabilities, often lacks specific, up-to-date project context, leading to generic or inaccurate suggestions.
+The primary goal of the MCP Server is to make the `salt-docs` knowledge base directly queryable by AI coding assistants running in the engineer's local environment. It addresses the common problem where AI, despite its capabilities, often lacks specific, up-to-date project context, leading to generic or inaccurate suggestions.
 
 Its core responsibilities include:
 
 *   **Local AI Integration**: Providing a local server endpoint that adheres to the Model Context Protocol (MCP), enabling seamless communication with AI assistants like Cursor, Continue, and Claude Desktop.
-*   **Tool Exposure**: Exposing `salt-docs-cli`'s documentation management capabilities as a defined set of AI tools, including `list_docs`, `get_docs`, `search_docs`, and `index_directories`.
+*   **Tool Exposure**: Exposing `salt-docs`'s documentation management capabilities as a defined set of AI tools, including `list_docs`, `get_docs`, `search_docs`, and `index_directories`.
 *   **Contextual Querying**: Allowing AI assistants to query the generated documentation and retrieve specific project context, abstractions, and code explanations.
 *   **Enhanced AI Accuracy**: Significantly improving the relevance and accuracy of AI-generated responses by providing direct access to the project's internal documentation.
-*   **Privacy Assurance**: Ensuring all interactions remain local to the engineer's machine, with no documentation or codebase context being transmitted externally via the `salt-docs-cli` server.
+*   **Privacy Assurance**: Ensuring all interactions remain local to the engineer's machine, with no documentation or codebase context being transmitted externally via the `salt-docs` server.
 
 ### Key Concepts
 
@@ -789,18 +789,18 @@ The integration relies on the Model Context Protocol and a defined set of tools 
 
 #### Model Context Protocol (MCP)
 
-The **Model Context Protocol (MCP)** is a standardized way for local AI coding assistants to interact with the user's development environment. It defines a communication layer that allows these assistants to discover and invoke "tools" or "capabilities" exposed by local services. By implementing an MCP server, `salt-docs-cli` transforms its documentation features into actionable functions that AI assistants can call to retrieve information. This is highlighted as a major feature addition in `CHANGELOG.md` version `0.1.7`.
+The **Model Context Protocol (MCP)** is a standardized way for local AI coding assistants to interact with the user's development environment. It defines a communication layer that allows these assistants to discover and invoke "tools" or "capabilities" exposed by local services. By implementing an MCP server, `salt-docs` transforms its documentation features into actionable functions that AI assistants can call to retrieve information. This is highlighted as a major feature addition in `CHANGELOG.md` version `0.1.7`.
 
 #### Local-First Architecture
 
-A fundamental principle of `salt-docs-cli` is its **local-first architecture**. The MCP server runs directly on the engineer's machine, alongside their IDE and AI assistant. This ensures that:
+A fundamental principle of `salt-docs` is its **local-first architecture**. The MCP server runs directly on the engineer's machine, alongside their IDE and AI assistant. This ensures that:
 *   **Data Privacy**: All project documentation and code context remain entirely local, never leaving the machine.
 *   **Speed**: Interactions between the AI assistant and the documentation server are fast, without network latency.
 *   **Security**: No sensitive project data is transmitted to external servers, enhancing the overall security posture.
 
 #### Defined Set of Tools
 
-The `salt-docs-cli` MCP server exposes four primary tools that AI assistants can leverage:
+The `salt-docs` MCP server exposes four primary tools that AI assistants can leverage:
 
 *   `list_docs`: Allows the AI to enumerate all generated documentation files within the configured output directory. This helps the AI understand the scope of available documentation.
 *   `get_docs`: Retrieves the full content of a specific documentation file, identified by its resource name or absolute file path. This is crucial for the AI to "read" relevant documents.
@@ -809,11 +809,11 @@ The `salt-docs-cli` MCP server exposes four primary tools that AI assistants can
 
 #### AI Assistant Integration
 
-Modern AI assistants like Cursor, Continue, and Claude Desktop provide mechanisms to configure local MCP servers. By adding `salt-docs-cli` as an MCP server, these assistants automatically discover and integrate the `list_docs`, `get_docs`, `search_docs`, and `index_directories` tools into their capabilities. This allows engineers to naturally ask questions like "How does the `Local Configuration Management` component work?" or "Search the docs for API key handling," and the AI can use the `salt-docs-cli` tools to provide highly accurate, project-specific answers.
+Modern AI assistants like Cursor, Continue, and Claude Desktop provide mechanisms to configure local MCP servers. By adding `salt-docs` as an MCP server, these assistants automatically discover and integrate the `list_docs`, `get_docs`, `search_docs`, and `index_directories` tools into their capabilities. This allows engineers to naturally ask questions like "How does the `Local Configuration Management` component work?" or "Search the docs for API key handling," and the AI can use the `salt-docs` tools to provide highly accurate, project-specific answers.
 
 ### Internal Implementation
 
-The MCP Server operates as a long-running process that listens for tool call requests from AI clients via standard input/output (stdio). It then dispatches these requests to the appropriate `salt-docs-cli` internal functions.
+The MCP Server operates as a long-running process that listens for tool call requests from AI clients via standard input/output (stdio). It then dispatches these requests to the appropriate `salt-docs` internal functions.
 
 #### Workflow Overview
 
@@ -842,7 +842,7 @@ The `salt-docs mcp` command initiates the MCP server. This server enters a loop,
 
 ##### 1. MCP Server Entry Point
 
-The `mcp` subcommand in `salt-docs-cli` launches the server in stdio mode.
+The `mcp` subcommand in `salt-docs` launches the server in stdio mode.
 
 ```python
 # Simplified excerpt from salt_docs/cli.py
@@ -858,7 +858,7 @@ def main():
 
 ##### 2. MCP Server Loop and Tool Dispatch
 
-The `run_mcp_server` function typically contains a loop that reads messages, identifies the requested tool, and invokes the corresponding `salt-docs-cli` internal function.
+The `run_mcp_server` function typically contains a loop that reads messages, identifies the requested tool, and invokes the corresponding `salt-docs` internal function.
 
 ```python
 # Simplified excerpt from salt_docs/mcp_server.py
@@ -931,11 +931,11 @@ def get_document_content(docs_dir: str, resource_name: str = None, file_path: st
 
 ### Concrete Usage Examples
 
-Engineers integrate with the MCP Server by configuring their AI assistant to use `salt-docs-cli`.
+Engineers integrate with the MCP Server by configuring their AI assistant to use `salt-docs`.
 
 #### 1. Setting up MCP with AI Assistants (e.g., Cursor)
 
-As detailed in the `README.md`, setting up `salt-docs-cli` as an MCP server is straightforward.
+As detailed in the `README.md`, setting up `salt-docs` as an MCP server is straightforward.
 
 First, ensure `salt-docs` is installed and `salt-docs init` has been run, and you've generated some documentation (e.g., `salt-docs --dir /path/to/my/project`).
 
@@ -955,7 +955,7 @@ After restarting Cursor, the AI will automatically detect and load the `salt-doc
 
 #### 2. Interacting with AI for Documentation
 
-Once configured, engineers can use natural language queries within their AI assistant, and the AI will invoke the appropriate `salt-docs-cli` MCP tool.
+Once configured, engineers can use natural language queries within their AI assistant, and the AI will invoke the appropriate `salt-docs` MCP tool.
 
 **Example 1: Listing Available Documentation**
 
@@ -968,7 +968,7 @@ Once configured, engineers can use natural language queries within their AI assi
       "tool_args": {}
     }
     ```
-*   **`salt-docs-cli` Response**: A list of file paths (e.g., `["/path/to/docs/01_local_config.md", "/path/to/docs/my_component.md"]`).
+*   **`salt-docs` Response**: A list of file paths (e.g., `["/path/to/docs/01_local_config.md", "/path/to/docs/my_component.md"]`).
 
 **Example 2: Searching for Specific Context**
 
@@ -983,7 +983,7 @@ Once configured, engineers can use natural language queries within their AI assi
       }
     }
     ```
-*   **`salt-docs-cli` Response**: Relevant snippets from `01_local_configuration_management_.md` (powered by [Fast Documentation Search](03_fast_documentation_search_.md)).
+*   **`salt-docs` Response**: Relevant snippets from `01_local_configuration_management_.md` (powered by [Fast Documentation Search](03_fast_documentation_search_.md)).
 
 **Example 3: Retrieving Full Document Content**
 
@@ -998,18 +998,18 @@ Once configured, engineers can use natural language queries within their AI assi
       }
     }
     ```
-*   **`salt-docs-cli` Response**: The full Markdown content of `02_documentation_generation_pipeline_.md`.
+*   **`salt-docs` Response**: The full Markdown content of `02_documentation_generation_pipeline_.md`.
 
 ### Key Takeaways
 
 The **MCP Server & AI Integration** component is transformative for developers, enabling a new level of productivity and context awareness.
 
-*   It acts as the **bridge between `salt-docs-cli` and AI coding assistants**, leveraging the Model Context Protocol.
+*   It acts as the **bridge between `salt-docs` and AI coding assistants**, leveraging the Model Context Protocol.
 *   The server operates **locally**, ensuring absolute **privacy and fast interactions**.
 *   It exposes a powerful set of **`list_docs`, `get_docs`, `search_docs`, and `index_directories` tools** for AI consumption.
 *   By providing AI assistants with direct access to project-specific context, it dramatically **enhances the relevance and accuracy of AI-generated responses**.
 
-This component solidifies `salt-docs-cli`'s position as an essential tool for engineers seeking comprehensive, intelligent, and privacy-preserving documentation within their development workflow.
+This component solidifies `salt-docs`'s position as an essential tool for engineers seeking comprehensive, intelligent, and privacy-preserving documentation within their development workflow.
 
 ---
 

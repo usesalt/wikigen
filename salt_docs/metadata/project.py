@@ -12,9 +12,9 @@ ORGANIZATION = "USESALT.CO"
 DESCRIPTION = "Wiki's for nerds, by nerds"
 
 # Repository info
-REPOSITORY_URL = "https://github.com/convolution-labs/salt-docs-cli"
+REPOSITORY_URL = "https://github.com/usesalt/salt-docs"
 HOMEPAGE_URL = "https://usesalt.co"
-ISSUES_URL = "https://github.com/convolution-labs/salt-docs-cli/issues"
+ISSUES_URL = "https://github.com/usesalt/salt-docs/issues"
 
 # Dynamic values
 CURRENT_YEAR = datetime.datetime.now().year
