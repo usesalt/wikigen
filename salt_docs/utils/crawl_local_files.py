@@ -1,7 +1,13 @@
 import os
 import fnmatch
 import pathspec
-from ..formatter.output_formatter import print_operation, print_info, Icons, Colors, format_size
+from ..formatter.output_formatter import (
+    print_operation,
+    print_info,
+    Icons,
+    Colors,
+    format_size,
+)
 
 
 def crawl_local_files(
@@ -39,7 +45,11 @@ def crawl_local_files(
                 "gitwildmatch", gitignore_patterns
             )
             # Format the .gitignore path to be relative to directory for cleaner output
-            gitignore_rel = os.path.relpath(gitignore_path, directory) if use_relative_paths else gitignore_path
+            gitignore_rel = (
+                os.path.relpath(gitignore_path, directory)
+                if use_relative_paths
+                else gitignore_path
+            )
             print_info(".gitignore", gitignore_rel)
         except (IOError, OSError, UnicodeDecodeError) as e:
             print(

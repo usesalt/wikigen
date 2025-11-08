@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2025-01-XX
+
+### Changed
+- Improved CLI logo formatting with nerdy icon
+- Enhanced help formatter with proper tree structure endings
+- Updated .gitignore loading message formatting for consistency
+- Removed redundant header lines from help output
+
+### Improved
+- Better visual consistency across CLI output
+- Cleaner help documentation structure
+- More consistent formatting throughout the CLI
+
 ## [0.2.3] - 2025-11-04
 
 ### Added
