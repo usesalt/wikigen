@@ -89,7 +89,8 @@ def chunk_markdown(
         # Extract chunk content
         chunk_content = content[current_pos:end_pos].strip()
 
-        if chunk_content:
+        # Only add chunk if it's meaningful (at least 100 chars to avoid tiny fragments)
+        if chunk_content and len(chunk_content) >= 100:
             chunks.append({
                 "content": chunk_content,
                 "start_pos": current_pos,
@@ -103,10 +104,15 @@ def chunk_markdown(
             break
 
         # Calculate next start position with overlap
+        # Ensure we make meaningful progress (at least 50% of chunk size)
+        min_progress = char_size // 2
         next_start = end_pos - char_overlap
         if next_start <= current_pos:
             # Ensure we make progress
-            next_start = current_pos + 1
+            next_start = current_pos + min_progress
+        elif (next_start - current_pos) < min_progress:
+            # If overlap would create too small a step, ensure minimum progress
+            next_start = current_pos + min_progress
 
         current_pos = next_start
 
