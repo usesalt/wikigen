@@ -291,7 +291,7 @@ class VectorIndex:
         with self._lock:
             return {
                 "total_chunks": len(self.metadata),
-                "total_files": len(self.file_to_chunks),
+                "total_files_with_chunks": len(self.file_to_chunks),
                 "index_size": self.index.ntotal if self.index else 0,
                 "embedding_dim": self.embedding_dim,
             }
