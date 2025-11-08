@@ -3,8 +3,7 @@ Enhanced help formatting for Salt Docs CLI.
 Provides colored, structured help output with icons and tree structure.
 """
 
-from ..metadata.project import PROJECT_NAME, DESCRIPTION, HOMEPAGE_URL, CLI_ENTRY_POINT
-from ..metadata.version import __version__
+from ..metadata.project import HOMEPAGE_URL, CLI_ENTRY_POINT
 from ..metadata.logo import print_logo
 
 
@@ -46,11 +45,6 @@ def print_enhanced_help():
     """Print enhanced help with logo, colors, and structure."""
     # Print logo
     print_logo()
-    print()
-
-    # Print header
-    print(f"{HelpColors.WHITE}{PROJECT_NAME.upper()} v{__version__}{HelpColors.RESET}")
-    print(f"{HelpColors.MEDIUM_GRAY}{HelpIcons.INFO} {DESCRIPTION}{HelpColors.RESET}")
     print()
 
     # Print structured help sections

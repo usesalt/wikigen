@@ -1,6 +1,7 @@
 """ASCII logo for Salt Docs CLI."""
 
-from .project import ORGANIZATION
+from .project import DESCRIPTION
+from .version import get_version
 
 
 def print_logo():
@@ -10,7 +11,10 @@ def print_logo():
     ATTRIB_COLOR = "\033[38;5;245m"  # Light gray
     RESET = "\033[0m"
 
-    logo = f"""{LOGO_COLOR}
+    version = get_version()
+    logo = f"""
+{ATTRIB_COLOR}INTRODUCING
+{RESET}{LOGO_COLOR}
 ██╗   ██╗      ███████╗ ███████╗ ██╗   ████████╗
   ██║   ██║    ██╔════╝ ██╔══██║ ██║   ╚══██╔══╝
     ██║   ██║  ███████╗ ███████║ ██║      ██║
@@ -18,6 +22,7 @@ def print_logo():
 ██║   ██║      ███████║ ██║  ██║ ███████╗ ██║
 ╚═╝   ╚═╝      ╚══════╝ ╚═╝  ╚═╝ ╚══════╝ ╚═╝
 {RESET}
-{ATTRIB_COLOR}COOKED WITH LOT OF ♥{RESET}
+{ATTRIB_COLOR}{DESCRIPTION} ♥ {RESET}
+{ATTRIB_COLOR}v{version}{RESET}
 """
     print(logo)

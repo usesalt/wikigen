@@ -19,7 +19,6 @@ from .config import (
 from .defaults import DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
 from .flows.flow import create_wiki_flow
 from .formatter.output_formatter import (
-    print_header,
     print_info,
     print_final_success,
     print_error_missing_api_key,
@@ -110,8 +109,6 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
 
     # Display logo and starting message with repository/directory and language
     print_logo()
-    print()  # Blank line for spacing
-    print_header()  # Version will be read from pyproject.toml
     print_info("Repository", repo_url or local_dir)
     print_info("Language", final_config["language"].capitalize())
     print_info("LLM caching", "Enabled" if final_config["use_cache"] else "Disabled")
