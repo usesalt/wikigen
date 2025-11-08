@@ -67,4 +67,3 @@ def get_embeddings_batch(
         texts, convert_to_numpy=True, batch_size=batch_size, show_progress_bar=False
     )
     return embeddings
-

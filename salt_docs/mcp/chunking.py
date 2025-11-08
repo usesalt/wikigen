@@ -56,24 +56,30 @@ def chunk_markdown(
         if end_pos < len(content):
             # Prefer breaking at headers (##, ###, etc.)
             header_pattern = r"\n#{1,6}\s+"
-            header_match = re.search(header_pattern, content[current_pos:end_pos + 100])
+            header_match = re.search(
+                header_pattern, content[current_pos : end_pos + 100]
+            )
             if header_match:
                 # Break at the header
                 end_pos = current_pos + header_match.start()
             else:
                 # Try breaking at paragraph boundaries (double newline)
-                para_match = re.search(r"\n\n+", content[end_pos - 200:end_pos + 100])
+                para_match = re.search(r"\n\n+", content[end_pos - 200 : end_pos + 100])
                 if para_match:
                     # Adjust end_pos to the paragraph break
                     end_pos = end_pos - 200 + para_match.end()
                 else:
                     # Try breaking at sentence boundaries
-                    sentence_match = re.search(r"[.!?]\s+", content[end_pos - 100:end_pos + 50])
+                    sentence_match = re.search(
+                        r"[.!?]\s+", content[end_pos - 100 : end_pos + 50]
+                    )
                     if sentence_match:
                         end_pos = end_pos - 100 + sentence_match.end()
                     else:
                         # Last resort: break at word boundary
-                        word_match = re.search(r"\s+", content[end_pos - 50:end_pos + 50])
+                        word_match = re.search(
+                            r"\s+", content[end_pos - 50 : end_pos + 50]
+                        )
                         if word_match:
                             end_pos = end_pos - 50 + word_match.end()
 
@@ -91,12 +97,14 @@ def chunk_markdown(
 
         # Only add chunk if it's meaningful (at least 100 chars to avoid tiny fragments)
         if chunk_content and len(chunk_content) >= 100:
-            chunks.append({
-                "content": chunk_content,
-                "start_pos": current_pos,
-                "end_pos": end_pos,
-                "chunk_index": chunk_index,
-            })
+            chunks.append(
+                {
+                    "content": chunk_content,
+                    "start_pos": current_pos,
+                    "end_pos": end_pos,
+                    "chunk_index": chunk_index,
+                }
+            )
             chunk_index += 1
 
         # Move to next chunk with overlap
@@ -117,4 +125,3 @@ def chunk_markdown(
         current_pos = next_start
 
     return chunks
-

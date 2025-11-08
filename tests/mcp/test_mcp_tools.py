@@ -122,7 +122,13 @@ def test_search_docs():
     try:
         results = search_docs("README", limit=10)
         print(results[:500] if len(results) > 500 else results)
-        assert "Found" in results or "No files found" in results or "No chunks found" in results or "No chunks found" in results or "Indexed" in results
+        assert (
+            "Found" in results
+            or "No files found" in results
+            or "No chunks found" in results
+            or "No chunks found" in results
+            or "Indexed" in results
+        )
         print("✓ Basic search works")
     except Exception as e:
         print(f"✗ Basic search failed: {e}")
@@ -136,7 +142,11 @@ def test_search_docs():
     try:
         results = search_docs("readme", limit=5)
         print(f"Results length: {len(results)} characters")
-        assert "Found" in results or "No files found" in results or "No chunks found" in results
+        assert (
+            "Found" in results
+            or "No files found" in results
+            or "No chunks found" in results
+        )
         print("✓ Search with limit works")
     except Exception as e:
         print(f"✗ Search with limit failed: {e}")
@@ -148,7 +158,11 @@ def test_search_docs():
         try:
             results = search_docs("readme", limit=10, directory_filter=str(output_dir))
             print(f"Results length: {len(results)} characters")
-            assert "Found" in results or "No files found" in results or "No chunks found" in results
+            assert (
+                "Found" in results
+                or "No files found" in results
+                or "No chunks found" in results
+            )
             print("✓ Search with directory filter works")
         except Exception as e:
             print(f"✗ Search with directory filter failed: {e}")

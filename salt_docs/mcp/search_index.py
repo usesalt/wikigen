@@ -61,9 +61,13 @@ class FileIndexer:
         if self.enable_semantic_search:
             try:
                 # Get embedding model dimension (384 for all-MiniLM-L6-v2)
-                embedding_model = DEFAULT_CONFIG.get("embedding_model", "all-MiniLM-L6-v2")
+                embedding_model = DEFAULT_CONFIG.get(
+                    "embedding_model", "all-MiniLM-L6-v2"
+                )
                 embedding_dim = 384  # all-MiniLM-L6-v2 dimension
-                self.vector_index = VectorIndex(embedding_dim=embedding_dim, index_path=vector_index_path)
+                self.vector_index = VectorIndex(
+                    embedding_dim=embedding_dim, index_path=vector_index_path
+                )
             except ImportError:
                 # FAISS not available, disable semantic search
                 self.enable_semantic_search = False
@@ -304,12 +308,18 @@ class FileIndexer:
                             file_changed = True
 
                         # Index chunks for semantic search if enabled and file changed
-                        if self.enable_semantic_search and self.vector_index and file_changed:
+                        if (
+                            self.enable_semantic_search
+                            and self.vector_index
+                            and file_changed
+                        ):
                             try:
                                 self._index_file_chunks(md_file, file_path_str)
                             except Exception as e:
                                 # Log error but don't fail indexing
-                                print(f"Warning: Could not index chunks for {file_path_str}: {e}")
+                                print(
+                                    f"Warning: Could not index chunks for {file_path_str}: {e}"
+                                )
 
                     except Exception:
                         # Skip files we can't read or process
@@ -350,7 +360,9 @@ class FileIndexer:
             chunk_overlap = config.get("chunk_overlap", 50)
 
             # Chunk the content
-            chunks = chunk_markdown(content, chunk_size=chunk_size, overlap=chunk_overlap)
+            chunks = chunk_markdown(
+                content, chunk_size=chunk_size, overlap=chunk_overlap
+            )
 
             if not chunks:
                 return
@@ -397,15 +409,17 @@ class FileIndexer:
                     def escape_fts5_token(word):
                         # Remove FTS5 special characters that cause syntax errors
                         # Replace with space to split into multiple tokens
-                        word = word.replace('"', ' ').replace("'", ' ').replace('\\', ' ')
-                        word = word.replace('(', ' ').replace(')', ' ')
-                        word = word.replace('[', ' ').replace(']', ' ')
-                        word = word.replace('?', ' ')  # Remove question marks
-                        word = word.replace('-', ' ')  # Split hyphenated words
+                        word = (
+                            word.replace('"', " ").replace("'", " ").replace("\\", " ")
+                        )
+                        word = word.replace("(", " ").replace(")", " ")
+                        word = word.replace("[", " ").replace("]", " ")
+                        word = word.replace("?", " ")  # Remove question marks
+                        word = word.replace("-", " ")  # Split hyphenated words
                         # Remove extra spaces
-                        word = ' '.join(word.split())
+                        word = " ".join(word.split())
                         return word
-                    
+
                     # Split query into words and escape each
                     words = query.strip().split()
                     escaped_words = []
@@ -422,7 +436,7 @@ class FileIndexer:
                                         # Remove any existing * to avoid double wildcards
                                         token = token.rstrip("*")
                                         escaped_words.append(f"{token}*")
-                    
+
                     # If no valid words after escaping, use wildcard
                     if not escaped_words:
                         fts_query = "*"
@@ -435,7 +449,7 @@ class FileIndexer:
                 # We embed the query directly after proper escaping
                 # Escape single quotes in fts_query for SQL embedding
                 fts_query_escaped = fts_query.replace("'", "''")
-                
+
                 if directory_filter:
                     sql = f"""
                         SELECT f.id, f.file_path, f.file_name, f.resource_name,
@@ -594,7 +608,9 @@ class FileIndexer:
             seen_files[file_path] += 1
 
             # Find file metadata
-            file_meta = next((f for f in candidate_files if f["file_path"] == file_path), None)
+            file_meta = next(
+                (f for f in candidate_files if f["file_path"] == file_path), None
+            )
             if not file_meta:
                 continue
 

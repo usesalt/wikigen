@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2025-11-04
+
+### Added
+- **Semantic Search with FAISS** - Vector-based semantic search using FAISS for chunk-based retrieval
+- **Enhanced Chunking** - Improved chunking with better size and overlap configuration
+- **Transformer-based Embeddings** - Support for sentence-transformers for better semantic understanding
+
+### Changed
+- Extended chunk sizes for better context retrieval
+- Improved chunking algorithm for more accurate results
+
+### Fixed
+- Fixed FTS5 syntax issues in search queries
+- Fixed chunking tests and index persistence issues
+- Improved chunk length handling for better search results
+
 ## [0.2.2] - 2025-11-03
 
 ### Added

@@ -12,6 +12,7 @@ import numpy as np
 
 try:
     import faiss
+
     FAISS_AVAILABLE = True
 except ImportError:
     FAISS_AVAILABLE = False
@@ -189,7 +190,9 @@ class VectorIndex:
                 query_embedding = query_embedding.reshape(1, -1)
 
             # Search in FAISS
-            distances, indices = self.index.search(query_embedding, k * 2)  # Get more, filter later
+            distances, indices = self.index.search(
+                query_embedding, k * 2
+            )  # Get more, filter later
 
             # Filter and format results
             results = []
@@ -292,4 +295,3 @@ class VectorIndex:
                 "index_size": self.index.ntotal if self.index else 0,
                 "embedding_dim": self.embedding_dim,
             }
-

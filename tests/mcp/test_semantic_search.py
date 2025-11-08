@@ -43,7 +43,6 @@ We also support OAuth 2.0 authentication for more secure access.
 ## Rate Limiting
 
 API requests are rate-limited to prevent abuse. Free tier users get 100 requests per hour.""",
-
         "database_queries.md": """# Database Queries
 
 This guide covers how to write efficient database queries.
@@ -74,7 +73,6 @@ To optimize queries:
 2. Use prepared statements
 3. Monitor slow queries
 4. Use connection pooling""",
-
         "error_handling.md": """# Error Handling
 
 Best practices for handling errors in your application.
@@ -108,7 +106,6 @@ Always log errors with context:
 - Timestamp
 - Error message
 - Stack trace""",
-
         "deployment.md": """# Deployment Guide
 
 How to deploy your application to production.
@@ -138,7 +135,6 @@ Our CI/CD pipeline automatically:
 - Deploys to staging
 - Runs integration tests
 - Deploys to production""",
-
         "testing.md": """# Testing Guide
 
 Comprehensive guide to testing your application.
@@ -194,7 +190,9 @@ def test_semantic_search_basic():
         db_path = tmp_path / "test_semantic_index.db"
         vector_index_path = tmp_path / "test_semantic_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=True, vector_index_path=vector_index_path
+            index_db_path=db_path,
+            enable_semantic_search=True,
+            vector_index_path=vector_index_path,
         )
 
         # Test 1: Index directory with timing
@@ -211,8 +209,10 @@ def test_semantic_search_basic():
         print("\nTest 2: Get index statistics")
         stats = indexer.get_stats()
         print(f"  Total files: {stats['total_files']}")
-        print(f"  Semantic search enabled: {stats.get('semantic_search_enabled', False)}")
-        if stats.get('semantic_search_enabled'):
+        print(
+            f"  Semantic search enabled: {stats.get('semantic_search_enabled', False)}"
+        )
+        if stats.get("semantic_search_enabled"):
             print(f"  Total chunks: {stats.get('total_chunks', 0)}")
             print(f"  Vector index size: {stats.get('index_size', 0)}")
         assert stats["total_files"] >= num_files
@@ -255,7 +255,9 @@ def test_semantic_search_basic():
         start_time = time.time()
         semantic_results = indexer.search_semantic(query, limit=10)
         semantic_time = time.time() - start_time
-        print(f"  Semantic search: {len(semantic_results)} chunks in {semantic_time:.3f}s")
+        print(
+            f"  Semantic search: {len(semantic_results)} chunks in {semantic_time:.3f}s"
+        )
 
         # Semantic should find relevant chunks even if keywords don't match exactly
         assert len(semantic_results) > 0, "Semantic search should find relevant chunks"
@@ -280,7 +282,9 @@ def test_semantic_search_basic():
         embedding_time = time.time() - start_time
         print(f"  Generated {len(embeddings)} embeddings in {embedding_time:.3f}s")
         print(f"  Embedding dimension: {embeddings.shape[1]}")
-        assert len(embeddings) == len(test_texts), "Should generate embeddings for all texts"
+        assert len(embeddings) == len(
+            test_texts
+        ), "Should generate embeddings for all texts"
         assert embeddings.shape[1] == 384, "Should use 384-dimensional embeddings"
         print("  ✓ Embedding generation works correctly")
 
@@ -305,7 +309,9 @@ def test_semantic_search_performance():
         db_path = tmp_path / "test_perf_index.db"
         vector_index_path = tmp_path / "test_perf_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=True, vector_index_path=vector_index_path
+            index_db_path=db_path,
+            enable_semantic_search=True,
+            vector_index_path=vector_index_path,
         )
 
         # Index directory
@@ -326,7 +332,9 @@ def test_semantic_search_performance():
 
         print("\nPerformance Comparison:")
         print("-" * 70)
-        print(f"{'Query':<40} {'Keyword (ms)':<15} {'Semantic (ms)':<15} {'Chunks':<10}")
+        print(
+            f"{'Query':<40} {'Keyword (ms)':<15} {'Semantic (ms)':<15} {'Chunks':<10}"
+        )
         print("-" * 70)
 
         total_keyword_time = 0
@@ -376,7 +384,9 @@ def test_semantic_search_accuracy():
         db_path = tmp_path / "test_accuracy_index.db"
         vector_index_path = tmp_path / "test_accuracy_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=True, vector_index_path=vector_index_path
+            index_db_path=db_path,
+            enable_semantic_search=True,
+            vector_index_path=vector_index_path,
         )
 
         # Index directory
@@ -410,9 +420,7 @@ def test_semantic_search_accuracy():
             )
 
             status = "✓" if is_relevant else "✗"
-            print(
-                f"{status} Query: '{query}'"
-            )
+            print(f"{status} Query: '{query}'")
             print(f"    Top result: {file_name} (score: {score:.4f})")
             print(f"    Relevant: {is_relevant}")
 
@@ -436,7 +444,9 @@ def test_backward_compatibility():
         db_path = tmp_path / "test_compat_index.db"
         vector_index_path = tmp_path / "test_compat_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=False, vector_index_path=vector_index_path
+            index_db_path=db_path,
+            enable_semantic_search=False,
+            vector_index_path=vector_index_path,
         )
 
         # Index directory
@@ -497,4 +507,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

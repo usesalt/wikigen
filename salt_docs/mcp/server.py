@@ -142,7 +142,7 @@ def search_docs(
         results = indexer.search(query, limit=limit, directory_filter=directory_filter)
         if not results:
             return f"No files found matching '{query}'."
-        
+
         # Format file results
         lines = [f"Found {len(results)} file(s) matching '{query}':\n"]
         for i, result in enumerate(results, 1):
