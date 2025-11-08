@@ -69,4 +69,10 @@ DEFAULT_CONFIG = {
     "llm_provider": "gemini",
     "llm_model": "gemini-2.5-flash",
     "documentation_mode": "minimal",
+    # Semantic search configuration
+    "semantic_search_enabled": True,
+    "chunk_size": 500,  # tokens
+    "chunk_overlap": 50,  # tokens
+    "embedding_model": "all-MiniLM-L6-v2",  # lightweight, fast
+    "max_chunks_per_file": 5,  # limit chunks returned per file
 }

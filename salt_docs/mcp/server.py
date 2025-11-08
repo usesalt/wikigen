@@ -114,21 +114,30 @@ def get_docs(identifier: str) -> str:
 
 @app.tool()
 def search_docs(
-    query: str, limit: int = 20, directory_filter: Optional[str] = None
+    query: str,
+    limit: int = 20,
+    directory_filter: Optional[str] = None,
+    use_semantic: bool = True,
+    chunk_limit: int = 5,
 ) -> str:
     """
-    Search for markdown files across indexed directories using fast full-text search.
+    Search for markdown files across indexed directories using fast full-text search
+    or semantic search (when enabled).
 
-    This tool searches file paths, names, and resource names. Index directories first
+    This tool searches file paths, names, and resource names. When semantic search is
+    enabled, it returns relevant chunks instead of entire files. Index directories first
     using the indexer, or files are auto-indexed from the configured output_dir.
 
     Args:
         query: Search query (supports multi-word queries)
         limit: Maximum number of results (default: 20)
         directory_filter: Optional directory path to filter results
+        use_semantic: Use semantic search to return relevant chunks (default: True)
+        chunk_limit: Maximum chunks per file when using semantic search (default: 5)
 
     Returns:
-        Formatted list of matching files with their paths and resource names.
+        Formatted list of matching files/chunks with their paths and resource names.
+        When semantic search is enabled, returns relevant chunks with snippets.
     """
     indexer = _get_indexer()
 
@@ -141,21 +150,51 @@ def search_docs(
             if added > 0 or updated > 0:
                 return f"Indexed {added} new files, updated {updated}. Try searching again."
 
-    results = indexer.search(query, limit=limit, directory_filter=directory_filter)
-
-    if not results:
-        return f"No files found matching '{query}'."
-
-    # Format results
-    lines = [f"Found {len(results)} file(s) matching '{query}':\n"]
-    for i, result in enumerate(results, 1):
-        lines.append(
-            f"{i}. {result['resource_name']}\n"
-            f"   Path: {result['file_path']}\n"
-            f"   Directory: {result['directory']}"
+    # Use semantic search if enabled and available
+    if use_semantic and indexer.enable_semantic_search:
+        results = indexer.search_semantic(
+            query,
+            limit=limit,
+            directory_filter=directory_filter,
+            max_chunks_per_file=chunk_limit,
         )
 
-    return "\n".join(lines)
+        if not results:
+            return f"No chunks found matching '{query}'."
+
+        # Format chunk results
+        lines = [f"Found {len(results)} relevant chunk(s) matching '{query}':\n"]
+        for i, result in enumerate(results, 1):
+            # Truncate chunk content for display (first 200 chars)
+            content_snippet = result.get("content", "")[:200]
+            if len(result.get("content", "")) > 200:
+                content_snippet += "..."
+
+            lines.append(
+                f"{i}. {result['resource_name']} (chunk {result.get('chunk_index', 0)})\n"
+                f"   Path: {result['file_path']}\n"
+                f"   Score: {result.get('score', 0):.4f}\n"
+                f"   Content: {content_snippet}"
+            )
+
+        return "\n".join(lines)
+    else:
+        # Use keyword search (backward compatible)
+        results = indexer.search(query, limit=limit, directory_filter=directory_filter)
+
+        if not results:
+            return f"No files found matching '{query}'."
+
+        # Format results
+        lines = [f"Found {len(results)} file(s) matching '{query}':\n"]
+        for i, result in enumerate(results, 1):
+            lines.append(
+                f"{i}. {result['resource_name']}\n"
+                f"   Path: {result['file_path']}\n"
+                f"   Directory: {result['directory']}"
+            )
+
+        return "\n".join(lines)
 
 
 @app.tool()

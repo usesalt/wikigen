@@ -2,6 +2,7 @@
 
 This module provides indexed search capabilities across multiple directories using
 SQLite FTS5 for full-text search of file paths, names, and resource names.
+Also supports semantic search using FAISS for chunk-based retrieval.
 """
 
 import sqlite3
@@ -12,6 +13,10 @@ from threading import Lock
 import hashlib
 
 from ..config import CONFIG_DIR
+from ..defaults import DEFAULT_CONFIG
+from .chunking import chunk_markdown
+from .embeddings import get_embeddings_batch
+from .vector_index import VectorIndex
 
 
 class FileIndexer:
@@ -20,14 +25,20 @@ class FileIndexer:
 
     Indexes markdown files across configured directories and provides
     fast search capabilities through SQLite's full-text search engine.
+    Also supports semantic search using FAISS for chunk-based retrieval.
     """
 
-    def __init__(self, index_db_path: Optional[Path] = None):
+    def __init__(
+        self,
+        index_db_path: Optional[Path] = None,
+        enable_semantic_search: Optional[bool] = None,
+    ):
         """
         Initialize the file indexer.
 
         Args:
             index_db_path: Path to SQLite database. Defaults to config_dir/file_index.db
+            enable_semantic_search: Enable semantic search. Defaults to config value.
         """
         if index_db_path is None:
             index_db_path = CONFIG_DIR / "file_index.db"
@@ -35,6 +46,27 @@ class FileIndexer:
         self.db_path = index_db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = Lock()
+
+        # Load semantic search config
+        if enable_semantic_search is None:
+            config = DEFAULT_CONFIG.copy()
+            enable_semantic_search = config.get("semantic_search_enabled", True)
+
+        self.enable_semantic_search = enable_semantic_search
+
+        # Initialize vector index if semantic search is enabled
+        self.vector_index: Optional[VectorIndex] = None
+        if self.enable_semantic_search:
+            try:
+                # Get embedding model dimension (384 for all-MiniLM-L6-v2)
+                embedding_model = DEFAULT_CONFIG.get("embedding_model", "all-MiniLM-L6-v2")
+                embedding_dim = 384  # all-MiniLM-L6-v2 dimension
+                self.vector_index = VectorIndex(embedding_dim=embedding_dim)
+            except ImportError:
+                # FAISS not available, disable semantic search
+                self.enable_semantic_search = False
+                self.vector_index = None
+
         self._init_database()
 
     def _init_database(self):
@@ -218,6 +250,7 @@ class FileIndexer:
                         )
                         existing = cursor.fetchone()
 
+                        file_changed = False
                         if existing:
                             file_id, old_hash, old_mtime = existing
                             # Update if file changed
@@ -242,6 +275,7 @@ class FileIndexer:
                                     ),
                                 )
                                 files_updated += 1
+                                file_changed = True
                             else:
                                 files_skipped += 1
                         else:
@@ -265,6 +299,15 @@ class FileIndexer:
                                 ),
                             )
                             files_added += 1
+                            file_changed = True
+
+                        # Index chunks for semantic search if enabled and file changed
+                        if self.enable_semantic_search and self.vector_index and file_changed:
+                            try:
+                                self._index_file_chunks(md_file, file_path_str)
+                            except Exception as e:
+                                # Log error but don't fail indexing
+                                print(f"Warning: Could not index chunks for {file_path_str}: {e}")
 
                     except Exception:
                         # Skip files we can't read or process
@@ -275,7 +318,51 @@ class FileIndexer:
             finally:
                 conn.close()
 
+            # Save vector index after indexing
+            if self.enable_semantic_search and self.vector_index:
+                try:
+                    self.vector_index.save()
+                except Exception as e:
+                    print(f"Warning: Could not save vector index: {e}")
+
         return (files_added, files_updated, files_skipped)
+
+    def _index_file_chunks(self, file_path: Path, file_path_str: str) -> None:
+        """
+        Index chunks for a file in the vector index.
+
+        Args:
+            file_path: Path to the file
+            file_path_str: String representation of the file path
+        """
+        if not self.vector_index:
+            return
+
+        try:
+            # Read file content
+            content = file_path.read_text(encoding="utf-8")
+
+            # Get chunking config
+            config = DEFAULT_CONFIG.copy()
+            chunk_size = config.get("chunk_size", 500)
+            chunk_overlap = config.get("chunk_overlap", 50)
+
+            # Chunk the content
+            chunks = chunk_markdown(content, chunk_size=chunk_size, overlap=chunk_overlap)
+
+            if not chunks:
+                return
+
+            # Generate embeddings for chunks
+            chunk_texts = [chunk["content"] for chunk in chunks]
+            embedding_model = config.get("embedding_model", "all-MiniLM-L6-v2")
+            embeddings = get_embeddings_batch(chunk_texts, model_name=embedding_model)
+
+            # Add chunks to vector index
+            self.vector_index.add_chunks(file_path_str, chunks, embeddings)
+        except Exception as e:
+            # Log error but don't fail
+            print(f"Warning: Could not index chunks for {file_path_str}: {e}")
 
     def search(
         self, query: str, limit: int = 50, directory_filter: Optional[str] = None
@@ -398,6 +485,102 @@ class FileIndexer:
             finally:
                 conn.close()
 
+    def search_semantic(
+        self,
+        query: str,
+        limit: int = 10,
+        directory_filter: Optional[str] = None,
+        max_chunks_per_file: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Hybrid semantic search: Use FTS5 to find candidate files, then FAISS to find relevant chunks.
+
+        Args:
+            query: Search query
+            limit: Maximum number of chunks to return
+            directory_filter: Optional directory path to filter results
+            max_chunks_per_file: Maximum chunks to return per file
+
+        Returns:
+            List of dictionaries with chunk information:
+            - 'file_path': Path to the file
+            - 'file_name': Name of the file
+            - 'resource_name': Resource name
+            - 'chunk_index': Index of the chunk
+            - 'content': Chunk content
+            - 'start_pos': Start position in file
+            - 'end_pos': End position in file
+            - 'score': Relevance score (distance)
+        """
+        if not self.enable_semantic_search or not self.vector_index:
+            # Fallback to keyword search
+            return self.search(query, limit=limit, directory_filter=directory_filter)
+
+        # Step 1: Use FTS5 to find candidate files
+        candidate_files = self.search(
+            query, limit=50, directory_filter=directory_filter
+        )  # Get more candidates
+
+        if not candidate_files:
+            return []
+
+        # Step 2: Generate query embedding
+        try:
+            from .embeddings import get_embedding
+            from ..defaults import DEFAULT_CONFIG
+
+            config = DEFAULT_CONFIG.copy()
+            embedding_model = config.get("embedding_model", "all-MiniLM-L6-v2")
+            query_embedding = get_embedding(query, model_name=embedding_model)
+        except Exception as e:
+            # If embedding fails, fallback to keyword search
+            print(f"Warning: Could not generate query embedding: {e}")
+            return self.search(query, limit=limit, directory_filter=directory_filter)
+
+        # Step 3: Search FAISS for relevant chunks in candidate files
+        file_paths = [f["file_path"] for f in candidate_files]
+        chunk_results = self.vector_index.search(
+            query_embedding, k=limit * 2, file_filter=file_paths
+        )
+
+        # Step 4: Format results
+        results = []
+        seen_files = {}  # Track chunks per file
+
+        for chunk_id, distance, metadata in chunk_results:
+            file_path = metadata["file_path"]
+
+            # Limit chunks per file
+            if file_path not in seen_files:
+                seen_files[file_path] = 0
+            if seen_files[file_path] >= max_chunks_per_file:
+                continue
+            seen_files[file_path] += 1
+
+            # Find file metadata
+            file_meta = next((f for f in candidate_files if f["file_path"] == file_path), None)
+            if not file_meta:
+                continue
+
+            results.append(
+                {
+                    "file_path": file_path,
+                    "file_name": file_meta.get("file_name", ""),
+                    "resource_name": file_meta.get("resource_name", ""),
+                    "directory": file_meta.get("directory", ""),
+                    "chunk_index": metadata.get("chunk_index", 0),
+                    "content": metadata.get("content", ""),
+                    "start_pos": metadata.get("start_pos", 0),
+                    "end_pos": metadata.get("end_pos", 0),
+                    "score": distance,
+                }
+            )
+
+            if len(results) >= limit:
+                break
+
+        return results
+
     def get_file_by_path(self, file_path: str) -> Optional[Dict[str, Any]]:
         """Get file information by absolute path."""
         with self._lock:
@@ -494,6 +677,16 @@ class FileIndexer:
             try:
                 cursor = conn.cursor()
 
+                # Get file paths to remove from vector index
+                cursor.execute(
+                    """
+                    SELECT file_path FROM files
+                    WHERE file_path LIKE ?
+                """,
+                    (f"{directory_str}%",),
+                )
+                file_paths = [row[0] for row in cursor.fetchall()]
+
                 # Delete files in this directory
                 cursor.execute(
                     """
@@ -505,6 +698,15 @@ class FileIndexer:
 
                 removed = cursor.rowcount
                 conn.commit()
+
+                # Remove from vector index
+                if self.enable_semantic_search and self.vector_index:
+                    for file_path in file_paths:
+                        try:
+                            self.vector_index.remove_file(file_path)
+                        except Exception:
+                            pass
+                    self.vector_index.save()
 
                 return removed
             finally:
@@ -521,6 +723,15 @@ class FileIndexer:
                 conn.commit()
             finally:
                 conn.close()
+
+            # Clear vector index
+            if self.enable_semantic_search and self.vector_index:
+                try:
+                    # Reinitialize vector index
+                    self.vector_index._init_index()
+                    self.vector_index.save()
+                except Exception:
+                    pass
 
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics about the index."""
@@ -542,11 +753,22 @@ class FileIndexer:
                 )
                 total_directories = cursor.fetchone()[0]
 
-                return {
+                stats = {
                     "total_files": total_files,
                     "total_size": total_size,
                     "total_directories": total_directories,
                     "database_path": str(self.db_path),
+                    "semantic_search_enabled": self.enable_semantic_search,
                 }
+
+                # Add vector index stats if available
+                if self.enable_semantic_search and self.vector_index:
+                    try:
+                        vector_stats = self.vector_index.get_stats()
+                        stats.update(vector_stats)
+                    except Exception:
+                        pass
+
+                return stats
             finally:
                 conn.close()
