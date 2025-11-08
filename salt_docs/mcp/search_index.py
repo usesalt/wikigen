@@ -32,6 +32,7 @@ class FileIndexer:
         self,
         index_db_path: Optional[Path] = None,
         enable_semantic_search: Optional[bool] = None,
+        vector_index_path: Optional[Path] = None,
     ):
         """
         Initialize the file indexer.
@@ -39,6 +40,7 @@ class FileIndexer:
         Args:
             index_db_path: Path to SQLite database. Defaults to config_dir/file_index.db
             enable_semantic_search: Enable semantic search. Defaults to config value.
+            vector_index_path: Path to FAISS vector index. Defaults to config_dir/vector_index.faiss
         """
         if index_db_path is None:
             index_db_path = CONFIG_DIR / "file_index.db"
@@ -61,7 +63,7 @@ class FileIndexer:
                 # Get embedding model dimension (384 for all-MiniLM-L6-v2)
                 embedding_model = DEFAULT_CONFIG.get("embedding_model", "all-MiniLM-L6-v2")
                 embedding_dim = 384  # all-MiniLM-L6-v2 dimension
-                self.vector_index = VectorIndex(embedding_dim=embedding_dim)
+                self.vector_index = VectorIndex(embedding_dim=embedding_dim, index_path=vector_index_path)
             except ImportError:
                 # FAISS not available, disable semantic search
                 self.enable_semantic_search = False
@@ -389,43 +391,72 @@ class FileIndexer:
                 if not query or not query.strip():
                     fts_query = "*"  # Match all
                 else:
-                    # Use prefix matching for partial word matches
-                    # FTS5 supports prefix matching with token* syntax
+                    # Escape FTS5 special characters
+                    # FTS5 special characters: " ' \ and operators: AND OR NOT
+                    # For simplicity, we'll use a simple word search
+                    def escape_fts5_token(word):
+                        # Remove FTS5 special characters that cause syntax errors
+                        # Replace with space to split into multiple tokens
+                        word = word.replace('"', ' ').replace("'", ' ').replace('\\', ' ')
+                        word = word.replace('(', ' ').replace(')', ' ')
+                        word = word.replace('[', ' ').replace(']', ' ')
+                        word = word.replace('?', ' ')  # Remove question marks
+                        # Remove extra spaces
+                        word = ' '.join(word.split())
+                        return word
+                    
+                    # Split query into words and escape each
                     words = query.strip().split()
                     escaped_words = []
                     for word in words:
                         word = word.strip()
                         if word:
-                            # Use prefix matching (*) to match partial tokens
-                            # This allows "test" to match "test1", "test2", etc.
-                            # Remove any existing * to avoid double wildcards
-                            word = word.rstrip("*")
-                            escaped_words.append(f"{word}*")
-                    fts_query = " OR ".join(escaped_words) if escaped_words else "*"
+                            # Escape special characters
+                            escaped = escape_fts5_token(word)
+                            if escaped:  # Only add if word is not empty after escaping
+                                # Split if multiple words after escaping
+                                for token in escaped.split():
+                                    if token:
+                                        # Use prefix matching (*) to match partial tokens
+                                        # Remove any existing * to avoid double wildcards
+                                        token = token.rstrip("*")
+                                        escaped_words.append(f"{token}*")
+                    
+                    # If no valid words after escaping, use wildcard
+                    if not escaped_words:
+                        fts_query = "*"
+                    else:
+                        # Join with OR for any-word matching
+                        fts_query = " OR ".join(escaped_words)
 
                 # Build SQL query
+                # Note: FTS5 MATCH doesn't support parameterized queries in some SQLite versions
+                # We embed the query directly after proper escaping
+                # Escape single quotes in fts_query for SQL embedding
+                fts_query_escaped = fts_query.replace("'", "''")
+                
                 if directory_filter:
-                    sql = """
+                    sql = f"""
                         SELECT f.id, f.file_path, f.file_name, f.resource_name,
                                f.directory, f.size, f.modified_time
                         FROM files_fts
                         JOIN files f ON files_fts.rowid = f.id
-                        WHERE files_fts MATCH ? AND f.directory LIKE ?
+                        WHERE files_fts MATCH '{fts_query_escaped}' AND f.directory LIKE ?
                         ORDER BY files_fts.rank
                         LIMIT ?
                     """
-                    cursor.execute(sql, (fts_query, f"%{directory_filter}%", limit))
+                    cursor.execute(sql, (f"%{directory_filter}%", limit))
                 else:
-                    sql = """
+                    sql = f"""
                         SELECT f.id, f.file_path, f.file_name, f.resource_name,
                                f.directory, f.size, f.modified_time
                         FROM files_fts
                         JOIN files f ON files_fts.rowid = f.id
-                        WHERE files_fts MATCH ?
+                        WHERE files_fts MATCH '{fts_query_escaped}'
                         ORDER BY files_fts.rank
                         LIMIT ?
                     """
-                    cursor.execute(sql, (fts_query, limit))
+                    cursor.execute(sql, (limit,))
 
                 results = []
                 rows = cursor.fetchall()
@@ -521,8 +552,12 @@ class FileIndexer:
             query, limit=50, directory_filter=directory_filter
         )  # Get more candidates
 
+        # If no candidate files found, search all files (semantic search can find relevant content)
         if not candidate_files:
-            return []
+            # Get all files instead of returning empty
+            candidate_files = self.get_all_files(directory_filter=directory_filter)
+            if not candidate_files:
+                return []
 
         # Step 2: Generate query embedding
         try:

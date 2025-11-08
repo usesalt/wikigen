@@ -190,10 +190,11 @@ def test_semantic_search_basic():
         num_files = create_test_documents(tmp_path)
         print(f"\n✓ Created {num_files} test documents")
 
-        # Create indexer with temporary database (doesn't affect local configs)
+        # Create indexer with temporary database and vector index (doesn't affect local configs)
         db_path = tmp_path / "test_semantic_index.db"
+        vector_index_path = tmp_path / "test_semantic_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=True
+            index_db_path=db_path, enable_semantic_search=True, vector_index_path=vector_index_path
         )
 
         # Test 1: Index directory with timing
@@ -263,9 +264,10 @@ def test_semantic_search_basic():
         # Test 5: Test chunking
         print("\nTest 5: Test chunking functionality")
         test_content = (tmp_path / "api_authentication.md").read_text()
-        chunks = chunk_markdown(test_content, chunk_size=200, overlap=20)
+        # Use smaller chunk size to ensure multiple chunks for test document
+        chunks = chunk_markdown(test_content, chunk_size=100, overlap=20)
         print(f"  Document split into {len(chunks)} chunks")
-        assert len(chunks) > 1, "Should create multiple chunks"
+        assert len(chunks) > 1, f"Should create multiple chunks, got {len(chunks)}"
         for i, chunk in enumerate(chunks[:2], 1):
             print(f"  Chunk {i}: {len(chunk['content'])} chars")
         print("  ✓ Chunking works correctly")
@@ -301,8 +303,9 @@ def test_semantic_search_performance():
 
         # Create indexer
         db_path = tmp_path / "test_perf_index.db"
+        vector_index_path = tmp_path / "test_perf_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=True
+            index_db_path=db_path, enable_semantic_search=True, vector_index_path=vector_index_path
         )
 
         # Index directory
@@ -371,8 +374,9 @@ def test_semantic_search_accuracy():
 
         # Create indexer
         db_path = tmp_path / "test_accuracy_index.db"
+        vector_index_path = tmp_path / "test_accuracy_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=True
+            index_db_path=db_path, enable_semantic_search=True, vector_index_path=vector_index_path
         )
 
         # Index directory
@@ -430,8 +434,9 @@ def test_backward_compatibility():
 
         # Create indexer with semantic search disabled
         db_path = tmp_path / "test_compat_index.db"
+        vector_index_path = tmp_path / "test_compat_index.faiss"
         indexer = FileIndexer(
-            index_db_path=db_path, enable_semantic_search=False
+            index_db_path=db_path, enable_semantic_search=False, vector_index_path=vector_index_path
         )
 
         # Index directory
