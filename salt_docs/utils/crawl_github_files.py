@@ -378,12 +378,7 @@ def crawl_github_files(
                         )
 
             elif item["type"] == "dir":
-                # OLD IMPLEMENTATION (comment this block to test new implementation)
-                # Always recurse into directories without checking exclusions first
-                # fetch_contents(item_path)
-
-                # NEW IMPLEMENTATION (uncomment this block to test optimized version)
-                # # Check if directory should be excluded before recursing
+                # Check if directory should be excluded before recursing
                 if exclude_patterns:
                     dir_excluded = any(
                         fnmatch.fnmatch(item_path, pattern)
@@ -393,7 +388,7 @@ def crawl_github_files(
                     if dir_excluded:
                         continue
 
-                # # Only recurse if directory is not excluded
+                # Only recurse if directory is not excluded
                 fetch_contents(item_path)
 
     # Start crawling from the specified path

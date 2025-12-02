@@ -52,13 +52,16 @@ def _is_url(source: str) -> bool:
 
 def _run_documentation_generation(repo_url, local_dir, args, config):
     """Shared logic for running documentation generation."""
+    # Detect CI environment
+    is_ci = getattr(args, 'ci', False) or os.environ.get('CI', '').lower() in ('true', '1', 'yes')
+    
     # Get GitHub token from argument, config, or environment variable
     github_token = None
     if repo_url:
         github_token = (
-            args.token or config.get("github_token") or sys.environ.get("GITHUB_TOKEN")
+            args.token or config.get("github_token") or os.environ.get("GITHUB_TOKEN")
         )
-        if not github_token:
+        if not github_token and not is_ci:
             print(
                 "⚠ Warning: No GitHub token provided.\n"
                 "  • For public repos: Optional, but you may hit rate limits (60 requests/hour)\n"
@@ -68,6 +71,12 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
 
     # Merge config with CLI args (CLI takes precedence)
     final_config = merge_config_with_args(config, args)
+    
+    # Handle custom output path (for CI workflows)
+    output_dir = final_config["output_dir"]
+    if hasattr(args, 'output_path') and args.output_path:
+        # Custom output path specified (e.g., 'docs/', 'documentation/')
+        output_dir = args.output_path
 
     # Initialize the shared dictionary with inputs
     shared = {
@@ -75,9 +84,7 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
         "local_dir": local_dir,
         "project_name": args.name,  # Can be None, FetchRepo will derive it
         "github_token": github_token,
-        "output_dir": final_config[
-            "output_dir"
-        ],  # Base directory for CombineWiki output
+        "output_dir": output_dir,  # Base directory for CombineWiki output
         # Add include/exclude patterns and max file size
         "include_patterns": (
             set(final_config["include_patterns"])
@@ -98,6 +105,10 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
         "max_abstraction_num": final_config["max_abstractions"],
         # Add documentation_mode parameter
         "documentation_mode": final_config.get("documentation_mode", "minimal"),
+        # CI-specific flags
+        "ci_mode": is_ci,
+        "update_mode": getattr(args, 'update', False),
+        "check_changes": getattr(args, 'check_changes', False),
         # Outputs will be populated by the nodes
         "files": [],
         "abstractions": [],
@@ -108,10 +119,15 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
     }
 
     # Display logo and starting message with repository/directory and language
-    print_logo()
+    if not is_ci:
+        print_logo()
     print_info("Repository", repo_url or local_dir)
     print_info("Language", final_config["language"].capitalize())
     print_info("LLM caching", "Enabled" if final_config["use_cache"] else "Disabled")
+    if is_ci:
+        print_info("CI Mode", "Enabled")
+    if hasattr(args, 'output_path') and args.output_path:
+        print_info("Output Path", args.output_path)
 
     # Create the flow instance
     wiki_flow = create_wiki_flow()
@@ -128,7 +144,16 @@ def _run_documentation_generation(repo_url, local_dir, args, config):
         )
 
         # Check for updates (non-blocking, only if 24 hours have passed)
-        _check_for_updates_quietly()
+        if not is_ci:
+            _check_for_updates_quietly()
+            
+        # Handle change detection for CI
+        if shared.get("check_changes"):
+            # If docs were changed, exit with code 1
+            if shared.get("docs_changed", False):
+                sys.exit(1)
+            else:
+                sys.exit(0)
     except ValueError as e:
         # Handle missing/invalid API key
         # Check for missing API key errors (provider-agnostic)
@@ -236,84 +261,8 @@ def main():
                 formatter_class=argparse.RawDescriptionHelpFormatter,
                 add_help=False,  # Disable default help to use our custom one
             )
-
-            # Add custom help option
-            parser.add_argument(
-                "-h",
-                "--help",
-                action="store_true",
-                help="Show enhanced help message and exit",
-            )
-
-            # Add version option
-            parser.add_argument(
-                "-v",
-                "--version",
-                action="version",
-                version=f"salt-docs {get_version()}",
-            )
-
-            parser.add_argument(
-                "-n",
-                "--name",
-                help="Project name (optional, derived from repo/directory if omitted).",
-            )
-            parser.add_argument(
-                "-t",
-                "--token",
-                help="GitHub personal access token (optional, reads from GITHUB_TOKEN env var if not provided).",
-            )
-            parser.add_argument(
-                "-o",
-                "--output",
-                default=config.get("output_dir", "output"),
-                help="Base directory for output (default: from config).",
-            )
-            parser.add_argument(
-                "-i",
-                "--include",
-                nargs="+",
-                help="Include file patterns (e.g. '*.py' '*.js'). Defaults to common code files if not specified.",
-            )
-            parser.add_argument(
-                "-e",
-                "--exclude",
-                nargs="+",
-                help="Exclude file patterns (e.g. 'tests/*' 'docs/*'). Defaults to test/build directories if not specified.",
-            )
-            parser.add_argument(
-                "-s",
-                "--max-size",
-                type=int,
-                default=config.get("max_file_size", 100000),
-                help="Maximum file size in bytes (default: from config).",
-            )
-            # Add language parameter for multi-language support
-            parser.add_argument(
-                "--language",
-                default=config.get("language", "english"),
-                help="Language for the generated wiki (default: from config)",
-            )
-            # Add use_cache parameter to control LLM caching
-            parser.add_argument(
-                "--no-cache",
-                action="store_true",
-                help="Disable LLM response caching (default: caching enabled)",
-            )
-            # Add max_abstraction_num parameter to control the number of abstractions
-            parser.add_argument(
-                "--max-abstractions",
-                type=int,
-                default=config.get("max_abstractions", 10),
-                help="Maximum number of abstractions to identify (default: from config)",
-            )
-            # Add documentation mode parameter
-            parser.add_argument(
-                "--mode",
-                choices=["minimal", "comprehensive"],
-                default=None,
-                help="Documentation mode (default: from config)",
-            )
+            
+            _add_common_arguments(parser, config)
 
             args = parser.parse_args()
 
@@ -347,20 +296,47 @@ def main():
         add_help=False,  # Disable default help to use our custom one
     )
 
-    # Add custom help option
-    parser.add_argument(
-        "-h", "--help", action="store_true", help="Show enhanced help message and exit"
-    )
-
-    # Add version option
-    parser.add_argument(
-        "-v", "--version", action="version", version=f"salt-docs {get_version()}"
-    )
-
+    _add_common_arguments(parser, config)
+    
     # Create mutually exclusive group for source
     source_group = parser.add_mutually_exclusive_group(required=False)
     source_group.add_argument("--repo", help="URL of the public GitHub repository.")
     source_group.add_argument("--dir", help="Path to local directory.")
+
+    args = parser.parse_args()
+
+    # Handle help display
+    if args.help:
+        print_enhanced_help()
+        sys.exit(0)
+
+    # Validate that either --repo or --dir is provided
+    if not args.repo and not args.dir:
+        print("Error: One of --repo or --dir is required.")
+        print("Use --help for more information.")
+        sys.exit(1)
+
+    # Call shared function with args.repo/args.dir
+    _run_documentation_generation(args.repo, args.dir, args, config)
+
+
+def _add_common_arguments(parser, config):
+    """Add common arguments to the parser."""
+    # Add custom help option
+    parser.add_argument(
+        "-h",
+        "--help",
+        action="store_true",
+        help="Show enhanced help message and exit",
+    )
+
+    # Add version option
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"salt-docs {get_version()}",
+    )
 
     parser.add_argument(
         "-n",
@@ -423,22 +399,26 @@ def main():
         default=None,
         help="Documentation mode (default: from config)",
     )
-
-    args = parser.parse_args()
-
-    # Handle help display
-    if args.help:
-        print_enhanced_help()
-        sys.exit(0)
-
-    # Validate that either --repo or --dir is provided
-    if not args.repo and not args.dir:
-        print("Error: One of --repo or --dir is required.")
-        print("Use --help for more information.")
-        sys.exit(1)
-
-    # Call shared function with args.repo/args.dir
-    _run_documentation_generation(args.repo, args.dir, args, config)
+    # CI/CD specific flags
+    parser.add_argument(
+        "--ci",
+        action="store_true",
+        help="Enable CI mode (non-interactive, uses defaults, better error messages)",
+    )
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Update existing documentation instead of overwriting (merges with existing docs)",
+    )
+    parser.add_argument(
+        "--output-path",
+        help="Custom output path for documentation (e.g., 'docs/', 'documentation/')",
+    )
+    parser.add_argument(
+        "--check-changes",
+        action="store_true",
+        help="Exit with code 1 if docs changed, 0 if unchanged (useful for conditional PR creation)",
+    )
 
 
 def _check_for_updates_quietly():
@@ -683,11 +663,6 @@ def update_api_key(provider: str):
     except ValueError as e:
         print(f"✘ {e}")
         print("Available providers: gemini, openai, anthropic, openrouter")
-
-
-def update_gemini_key():
-    """Update Gemini API key (interactive). Legacy function."""
-    update_api_key("gemini")
 
 
 

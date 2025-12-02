@@ -117,6 +117,66 @@ salt-docs config set output_dir /custom/path
 ```
 
 ---
+## CI/CD Integration
+
+Salt Docs can automatically generate and update documentation in your CI/CD pipeline. Perfect for keeping docs in sync with code changes!
+
+### Quick Setup for GitHub Actions
+
+1. **Add workflow file** to `.github/workflows/salt-docs.yml`:
+
+```yaml
+name: Salt Docs
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install salt-docs
+      - run: salt-docs run . --ci --output-path docs/
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'docs: updated documentation for new changes'
+          branch: salt-docs/update-${{ github.run_number }}
+          title: 'Update Documentation'
+```
+
+2. **Add your LLM API key** to GitHub Secrets:
+   - Go to **Settings** → **Secrets and variables** → **Actions**
+   - Add `GEMINI_API_KEY` (or `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, etc.)
+
+3. **Push to main** - Documentation will be automatically generated and a PR will be created!
+
+### CI-Specific Flags
+
+- `--ci` - Enable CI mode (non-interactive, better error messages)
+- `--output-path <path>` - Custom output directory (e.g., `docs/`, `documentation/`)
+- `--update` - Merge with existing docs instead of overwriting
+- `--check-changes` - Exit with code 1 if docs changed, 0 if unchanged
+
+### Learn More
+
+See the complete [CI/CD Integration Guide](docs/ci-cd-integration.md) for:
+- Advanced configuration options
+- Multiple LLM provider setup
+- Troubleshooting tips
+- Best practices
+- Future integrations (Confluence, Notion, etc.)
+
+---
 ## MCP Server Setup
 
 Salt Docs includes an MCP (Model Context Protocol) server that exposes your generated documentation to AI assistants in IDEs like Cursor, Continue.dev, and Claude Desktop.

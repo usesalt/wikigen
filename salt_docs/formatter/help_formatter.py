@@ -119,6 +119,19 @@ def _print_options_section():
             "--mode MODE",
             "Documentation mode: minimal or comprehensive (default: from config)",
         ),
+        ("--ci", "Enable CI mode (non-interactive, uses defaults)"),
+        (
+            "--update",
+            "Update existing documentation instead of overwriting",
+        ),
+        (
+            "--output-path PATH",
+            "Custom output path for documentation",
+        ),
+        (
+            "--check-changes",
+            "Exit with code 1 if docs changed (for CI checks)",
+        ),
     ]
 
     for i, (option, description) in enumerate(options):
