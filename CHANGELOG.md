@@ -2,7 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.4] - 2025-01-XX
+## [0.3.0] - 2025-12-02
+
+### Added
+- **CI/CD Integration** - Full support for automated documentation generation in CI pipelines
+- **New CLI Flags**:
+    - `--ci`: Enables non-interactive CI mode with optimized logging
+    - `--output-path`: Allows specifying a custom output directory (overriding config)
+    - `--check-changes`: Exits with status code 1 if documentation changes are detected (for conditional PR creation)
+    - `--update`: Merges new documentation with existing files instead of overwriting
+- **GitHub Actions Workflow** - Added `salt-docs.yml` template for quick setup
+- **Documentation** - Comprehensive CI/CD integration guide and examples
+
+### Changed
+- **CLI Refactoring** - Consolidated argument parsing logic for better maintainability
+- **Performance** - Optimized file crawling and reduced technical debt by removing legacy code
+
+## [0.2.4]
 
 ### Changed
 - Improved CLI logo formatting with nerdy icon
@@ -15,7 +31,7 @@ All notable changes to this project will be documented in this file.
 - Cleaner help documentation structure
 - More consistent formatting throughout the CLI
 
-## [0.2.3] - 2025-11-04
+## [0.2.3]
 
 ### Added
 - **Semantic Search with FAISS** - Vector-based semantic search using FAISS for chunk-based retrieval
@@ -31,7 +47,7 @@ All notable changes to this project will be documented in this file.
 - Fixed chunking tests and index persistence issues
 - Improved chunk length handling for better search results
 
-## [0.2.2] - 2025-11-03
+## [0.2.2]
 
 ### Added
 - **Documentation Mode Selection** - Choose between minimal and comprehensive documentation output
@@ -58,7 +74,7 @@ All notable changes to this project will be documented in this file.
 - More flexible documentation generation to match user needs
 - Code quality and formatting consistency
 
-## [0.2.0] - 2025-01-29
+## [0.2.0]
 
 ### Added
 - **Multi-Provider LLM Support** - Support for multiple LLM providers beyond Gemini
@@ -92,7 +108,7 @@ All notable changes to this project will be documented in this file.
 - Ollama support for local LLM usage without API keys
 - Provider-specific model recommendations for cost-effective options
 
-## [0.1.8] - 2025-01-28
+## [0.1.8]
 
 ### Changed
 - **Cross-platform config directory** - Migrated config file location to OS-appropriate directories
@@ -107,7 +123,7 @@ All notable changes to this project will be documented in this file.
 - Better Windows support with proper `%APPDATA%` usage
 - Code formatting with black
 
-## [0.1.7] - 2025-01-28
+## [0.1.7]
 
 ### Added
 - **MCP (Model Context Protocol) Server** - Full MCP server implementation for AI assistant integration
@@ -141,7 +157,7 @@ All notable changes to this project will be documented in this file.
 - Developer experience with better file organization
 - AI assistant integration capabilities
 
-## [0.1.6] - 2025-01-28
+## [0.1.6]     
 
 ### Added
 - Automatic update notification system
@@ -157,7 +173,7 @@ All notable changes to this project will be documented in this file.
 - User experience with automated update awareness
 - Code quality with additional test suite
 
-## [0.1.5] - 2025-01-28
+## [0.1.5]
 
 ### Changed
 - Updated version to 0.1.5
@@ -169,7 +185,7 @@ All notable changes to this project will be documented in this file.
 - Project maintainability
 - Development workflow
 
-## [0.1.4] - 2025-01-25
+## [0.1.4]
 
 ### Added
 - Fallback formatters for improved error handling and robustness
@@ -186,7 +202,7 @@ All notable changes to this project will be documented in this file.
 - Error handling and user experience
 - Documentation structure and clarity
 
-## [0.1.3] - 2025-01-23
+## [0.1.3]
 
 ### Added
 - Enhanced init mode with structured tree-based visual design
@@ -206,7 +222,7 @@ All notable changes to this project will be documented in this file.
 - Code formatting and linting compliance
 - Overall CLI design coherence
 
-## [0.1.2] - 2025-01-23
+## [0.1.2]
 
 ### Added
 - Enhanced CLI with beautiful ASCII logo and branding
@@ -242,7 +258,7 @@ All notable changes to this project will be documented in this file.
 - Documentation and help system
 - Error handling and robustness
 
-## [0.1.0] - 2025-01-23
+## [0.1.0]
 
 ### Added
 - Initial release of Salt Docs CLI
