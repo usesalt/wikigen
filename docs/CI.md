@@ -1,15 +1,15 @@
 # CI/CD Integration Guide
 
-This guide explains how to integrate Salt Docs into your CI/CD pipeline to automatically generate and update documentation whenever code changes are pushed to your repository.
+This guide explains how to integrate WikiGen into your CI/CD pipeline to automatically generate and update documentation whenever code changes are pushed to your repository.
 
 ## Quick Start
 
 ### 1. Add Workflow File
 
-Create `.github/workflows/salt-docs.yml` in your repository:
+Create `.github/workflows/wikigen.yml` in your repository:
 
 ```yaml
-name: Salt Docs - Auto Documentation
+name: WikiGen - Auto Documentation
 
 on:
   push:
@@ -29,12 +29,12 @@ jobs:
         with:
           python-version: '3.12'
       
-      - name: Install Salt Docs
-        run: pip install salt-docs
+      - name: Install WikiGen
+        run: pip install wikigen
       
       - name: Generate Documentation
         run: |
-          salt-docs run . --ci --output-path docs/
+          wikigen run . --ci --output-path docs/
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       
@@ -42,7 +42,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'docs: updated documentation for new changes'
-          branch: salt-docs/update-${{ github.run_number }}
+          branch: wikigen/update-${{ github.run_number }}
           title: 'Update Documentation'
 ```
 
@@ -64,18 +64,18 @@ For additional customization, add repository variables:
 
 1. Go to **Settings** → **Secrets and variables** → **Actions** → **Variables**
 2. Add any of these optional variables:
-   - `SALT_LLM_PROVIDER` - LLM provider (default: `gemini`)
-   - `SALT_LLM_MODEL` - Model name (default: `gemini-2.0-flash-exp`)
-   - `SALT_OUTPUT_PATH` - Output directory (default: `docs`)
-   - `SALT_LANGUAGE` - Documentation language (default: `english`)
-   - `SALT_MAX_ABSTRACTIONS` - Max abstractions (default: `10`)
+   - `WIKIGEN_LLM_PROVIDER` - LLM provider (default: `gemini`)
+   - `WIKIGEN_LLM_MODEL` - Model name (default: `gemini-2.0-flash-exp`)
+   - `WIKIGEN_OUTPUT_PATH` - Output directory (default: `docs`)
+   - `WIKIGEN_LANGUAGE` - Documentation language (default: `english`)
+   - `WIKIGEN_MAX_ABSTRACTIONS` - Max abstractions (default: `10`)
 
 ## How It Works
 
 ```mermaid
 graph LR
     A[Push to main] --> B[Workflow Triggers]
-    B --> C[Install Salt Docs]
+    B --> C[Install WikiGen]
     C --> D[Generate Docs]
     D --> E{Changes?}
     E -->|Yes| F[Create PR]
@@ -84,15 +84,15 @@ graph LR
 ```
 
 1. **Trigger**: Workflow runs on every push to main/master
-2. **Setup**: Installs Python and Salt Docs
-3. **Generate**: Runs `salt-docs run . --ci --output-path docs/`
+2. **Setup**: Installs Python and WikiGen
+3. **Generate**: Runs `wikigen run . --ci --output-path docs/`
 4. **Detect Changes**: Checks if documentation was updated
 5. **Create PR**: If changes detected, creates a PR with updated docs
 6. **Review**: Team reviews and merges the PR
 
 ## CLI Flags for CI
 
-Salt Docs provides special flags for CI/CD workflows:
+WikiGen provides special flags for CI/CD workflows:
 
 | Flag | Description |
 |------|-------------|
@@ -105,13 +105,13 @@ Salt Docs provides special flags for CI/CD workflows:
 
 ```bash
 # Basic CI usage
-salt-docs run . --ci --output-path docs/
+wikigen run . --ci --output-path docs/
 
 # Update existing docs
-salt-docs run . --ci --update --output-path docs/
+wikigen run . --ci --update --output-path docs/
 
 # Check for changes (for conditional PR creation)
-salt-docs run . --ci --check-changes --output-path docs/
+wikigen run . --ci --check-changes --output-path docs/
 if [ $? -eq 1 ]; then
   echo "Documentation changed"
 fi
@@ -139,7 +139,7 @@ Generate docs in different locations:
 ```yaml
 - name: Generate Documentation
   run: |
-    salt-docs run . --ci --output-path documentation/
+    wikigen run . --ci --output-path documentation/
 ```
 
 ### Conditional Execution
@@ -164,24 +164,24 @@ on:
 ```yaml
 - name: Generate Documentation
   run: |
-    salt-docs run . --ci --output-path docs/
+    wikigen run . --ci --output-path docs/
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-Set `SALT_LLM_PROVIDER=openai` and `SALT_LLM_MODEL=gpt-4o-mini` in repository variables.
+Set `WIKIGEN_LLM_PROVIDER=openai` and `WIKIGEN_LLM_MODEL=gpt-4o-mini` in repository variables.
 
 #### Anthropic Claude
 
 ```yaml
 - name: Generate Documentation
   run: |
-    salt-docs run . --ci --output-path docs/
+    wikigen run . --ci --output-path docs/
   env:
     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
 
-Set `SALT_LLM_PROVIDER=anthropic` and `SALT_LLM_MODEL=claude-3-5-sonnet-20241022` in repository variables.
+Set `WIKIGEN_LLM_PROVIDER=anthropic` and `WIKIGEN_LLM_MODEL=claude-3-5-sonnet-20241022` in repository variables.
 
 ## Troubleshooting
 
@@ -230,7 +230,7 @@ permissions:
 Require PR reviews before merging documentation updates:
 
 ```yaml
-# .github/workflows/salt-docs.yml
+# .github/workflows/wikigen.yml
 - name: Create Pull Request
   uses: peter-evans/create-pull-request@v6
   with:
@@ -279,7 +279,7 @@ on:
 
 ## Future Integrations
 
-Salt Docs is designed to support multiple documentation platforms. Future versions will support:
+WikiGen is designed to support multiple documentation platforms. Future versions will support:
 
 - **Confluence**: Automatic wiki page updates
 - **Notion**: Database and page synchronization
@@ -293,7 +293,7 @@ To prepare for these integrations, use the `--output-path` flag to organize your
 
 ### Complete Workflow with All Features
 
-See [`.github/workflows/salt-docs.yml`](file:///.github/workflows/salt-docs.yml) in this repository for a complete example with:
+See [`.github/workflows/wikigen.yml`](file:///.github/workflows/wikigen.yml) in this repository for a complete example with:
 - Multi-provider support
 - Configurable options
 - Error handling
@@ -317,8 +317,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - run: pip install salt-docs
-      - run: salt-docs run . --ci --output-path docs/
+      - run: pip install wikigen
+      - run: wikigen run . --ci --output-path docs/
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       - uses: peter-evans/create-pull-request@v6
@@ -330,5 +330,5 @@ jobs:
 ## Support
 
 For issues or questions:
-- GitHub Issues: [usesalt/salt-docs](https://github.com/usesalt/salt-docs/issues)
+- GitHub Issues: [usesalt/wikigen](https://github.com/usesalt/wikigen/issues)
 - Documentation: [README.md](../README.md)

@@ -1,6 +1,6 @@
 # Release Guide
 
-This document explains how to release new versions of Salt Docs CLI.
+This document explains how to release new versions of WikiGen CLI.
 
 ## Prerequisites
 
@@ -56,7 +56,7 @@ Once you create a tag or release, the GitHub Actions workflow will:
 
 - Go to **Actions** tab in GitHub to see the workflow progress
 - Check **PyPI** to see your package appear
-- Test installation: `pip install salt-docs==0.1.0`
+- Test installation: `pip install wikigen==0.1.0`
 
 ## Troubleshooting
 

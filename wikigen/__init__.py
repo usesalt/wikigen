@@ -1,5 +1,5 @@
 """
-Salt Docs - Wiki for your codebase
+WikiGen - Wiki for your codebase
 """
 
 from .metadata import AUTHOR_NAME

@@ -14,7 +14,7 @@ def get_version():
 
 
 # Static metadata
-PROJECT_NAME = "salt-docs"
+PROJECT_NAME = "wikigen"
 AUTHOR_NAME = "Mithun Ramesh"
 DESCRIPTION = "Wiki's for nerds, by nerds"
 MIN_PYTHON_VERSION = "3.12"
@@ -42,7 +42,7 @@ setup(
     python_requires=f">={MIN_PYTHON_VERSION}",
     entry_points={
         "console_scripts": [
-            "salt-docs=salt_docs.cli:main",
+            "wikigen=wikigen.cli:main",
         ],
     },
     include_package_data=True,

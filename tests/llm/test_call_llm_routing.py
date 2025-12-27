@@ -14,7 +14,7 @@ def test_provider_routing_logic():
     print("Testing Call LLM Routing Logic")
     print("=" * 60)
 
-    from salt_docs.utils.call_llm import (
+    from wikigen.utils.call_llm import (
         _call_gemini,
         _call_openai,
         _call_anthropic,
@@ -63,7 +63,7 @@ def test_ollama_routing():
     print("Testing Ollama Routing")
     print("=" * 60)
 
-    from salt_docs.utils.call_llm import _call_ollama
+    from wikigen.utils.call_llm import _call_ollama
     import inspect
 
     # Check that Ollama function accepts api_key as optional
@@ -92,7 +92,7 @@ def test_openai_o1_support():
     print("Testing OpenAI o1 Support")
     print("=" * 60)
 
-    from salt_docs.utils.call_llm import _call_openai
+    from wikigen.utils.call_llm import _call_openai
     import inspect
 
     # Check the function has logic for o1 models
@@ -112,7 +112,7 @@ def test_anthropic_extended_thinking():
     print("Testing Anthropic Extended Thinking")
     print("=" * 60)
 
-    from salt_docs.utils.call_llm import _call_anthropic
+    from wikigen.utils.call_llm import _call_anthropic
     import inspect
 
     # Check the function has logic for extended thinking

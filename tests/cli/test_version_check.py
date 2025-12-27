@@ -12,12 +12,12 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from salt_docs.utils.version_check import (
+from wikigen.utils.version_check import (
     fetch_latest_version,
     compare_versions,
     check_for_update,
 )
-from salt_docs.config import (
+from wikigen.config import (
     should_check_for_updates,
     update_last_check_timestamp,
     load_config,
@@ -60,7 +60,7 @@ class TestVersionComparison:
 class TestFetchLatestVersion:
     """Test fetching latest version from PyPI."""
 
-    @patch("salt_docs.utils.version_check.requests.get")
+    @patch("wikigen.utils.version_check.requests.get")
     def test_fetch_latest_version_success(self, mock_get):
         """Test successful version fetch from PyPI."""
         mock_response = MagicMock()
@@ -71,10 +71,10 @@ class TestFetchLatestVersion:
         version = fetch_latest_version()
         assert version == "0.1.6"
         mock_get.assert_called_once_with(
-            "https://pypi.org/pypi/salt-docs/json", timeout=5.0
+            "https://pypi.org/pypi/wikigen/json", timeout=5.0
         )
 
-    @patch("salt_docs.utils.version_check.requests.get")
+    @patch("wikigen.utils.version_check.requests.get")
     def test_fetch_latest_version_network_error(self, mock_get):
         """Test that network errors return None."""
         import requests
@@ -84,7 +84,7 @@ class TestFetchLatestVersion:
         version = fetch_latest_version()
         assert version is None
 
-    @patch("salt_docs.utils.version_check.requests.get")
+    @patch("wikigen.utils.version_check.requests.get")
     def test_fetch_latest_version_invalid_response(self, mock_get):
         """Test that invalid JSON responses return None."""
         mock_response = MagicMock()
@@ -95,7 +95,7 @@ class TestFetchLatestVersion:
         version = fetch_latest_version()
         assert version is None
 
-    @patch("salt_docs.utils.version_check.requests.get")
+    @patch("wikigen.utils.version_check.requests.get")
     def test_fetch_latest_version_custom_package(self, mock_get):
         """Test fetching version with custom package name."""
         mock_response = MagicMock()
@@ -113,7 +113,7 @@ class TestFetchLatestVersion:
 class TestCheckForUpdate:
     """Test the check_for_update function."""
 
-    @patch("salt_docs.utils.version_check.fetch_latest_version")
+    @patch("wikigen.utils.version_check.fetch_latest_version")
     def test_check_for_update_available(self, mock_fetch):
         """Test when an update is available."""
         mock_fetch.return_value = "0.1.6"
@@ -121,7 +121,7 @@ class TestCheckForUpdate:
         result = check_for_update("0.1.5")
         assert result == "0.1.6"
 
-    @patch("salt_docs.utils.version_check.fetch_latest_version")
+    @patch("wikigen.utils.version_check.fetch_latest_version")
     def test_check_for_update_not_available(self, mock_fetch):
         """Test when no update is available (same version)."""
         mock_fetch.return_value = "0.1.5"
@@ -129,7 +129,7 @@ class TestCheckForUpdate:
         result = check_for_update("0.1.5")
         assert result is None
 
-    @patch("salt_docs.utils.version_check.fetch_latest_version")
+    @patch("wikigen.utils.version_check.fetch_latest_version")
     def test_check_for_update_current_newer(self, mock_fetch):
         """Test when current version is newer (shouldn't happen but test anyway)."""
         mock_fetch.return_value = "0.1.5"
@@ -137,7 +137,7 @@ class TestCheckForUpdate:
         result = check_for_update("0.1.6")
         assert result is None
 
-    @patch("salt_docs.utils.version_check.fetch_latest_version")
+    @patch("wikigen.utils.version_check.fetch_latest_version")
     def test_check_for_update_network_error(self, mock_fetch):
         """Test when network error occurs."""
         mock_fetch.return_value = None
@@ -154,7 +154,7 @@ class TestConfigHelpers:
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "config.json"
 
-            with patch("salt_docs.config.CONFIG_FILE", config_path):
+            with patch("wikigen.config.CONFIG_FILE", config_path):
                 # Create config without last_update_check
                 config = {"output_dir": "/tmp"}
                 save_config(config)
@@ -166,7 +166,7 @@ class TestConfigHelpers:
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "config.json"
 
-            with patch("salt_docs.config.CONFIG_FILE", config_path):
+            with patch("wikigen.config.CONFIG_FILE", config_path):
                 # Set last check to now
                 config = {"output_dir": "/tmp", "last_update_check": time.time()}
                 save_config(config)
@@ -178,7 +178,7 @@ class TestConfigHelpers:
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "config.json"
 
-            with patch("salt_docs.config.CONFIG_FILE", config_path):
+            with patch("wikigen.config.CONFIG_FILE", config_path):
                 # Set last check to 25 hours ago
                 config = {
                     "output_dir": "/tmp",
@@ -193,7 +193,7 @@ class TestConfigHelpers:
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "config.json"
 
-            with patch("salt_docs.config.CONFIG_FILE", config_path):
+            with patch("wikigen.config.CONFIG_FILE", config_path):
                 # Initially no timestamp
                 config = {"output_dir": "/tmp"}
                 save_config(config)
@@ -213,20 +213,20 @@ class TestConfigHelpers:
 class TestCLIIntegration:
     """Test CLI integration of version checking."""
 
-    @patch("salt_docs.cli.should_check_for_updates")
-    @patch("salt_docs.cli.check_for_update")
-    @patch("salt_docs.cli.update_last_check_timestamp")
-    @patch("salt_docs.cli.print_update_notification")
+    @patch("wikigen.cli.should_check_for_updates")
+    @patch("wikigen.cli.check_for_update")
+    @patch("wikigen.cli.update_last_check_timestamp")
+    @patch("wikigen.cli.print_update_notification")
     def test_check_updates_called_on_success(
         self, mock_notify, mock_update_ts, mock_check, mock_should
     ):
         """Test that update check is called after successful execution."""
-        from salt_docs.cli import _check_for_updates_quietly
+        from wikigen.cli import _check_for_updates_quietly
 
         mock_should.return_value = True
         mock_check.return_value = "0.1.6"
 
-        with patch("salt_docs.cli.get_version", return_value="0.1.5"):
+        with patch("wikigen.cli.get_version", return_value="0.1.5"):
             _check_for_updates_quietly()
 
         mock_should.assert_called_once()
@@ -234,15 +234,15 @@ class TestCLIIntegration:
         mock_update_ts.assert_called_once()
         mock_notify.assert_called_once_with("0.1.5", "0.1.6")
 
-    @patch("salt_docs.cli.should_check_for_updates")
-    @patch("salt_docs.cli.check_for_update")
-    @patch("salt_docs.cli.update_last_check_timestamp")
-    @patch("salt_docs.cli.print_update_notification")
+    @patch("wikigen.cli.should_check_for_updates")
+    @patch("wikigen.cli.check_for_update")
+    @patch("wikigen.cli.update_last_check_timestamp")
+    @patch("wikigen.cli.print_update_notification")
     def test_check_updates_skipped_if_too_recent(
         self, mock_notify, mock_update_ts, mock_check, mock_should
     ):
         """Test that update check is skipped if checked recently."""
-        from salt_docs.cli import _check_for_updates_quietly
+        from wikigen.cli import _check_for_updates_quietly
 
         mock_should.return_value = False
 
@@ -253,35 +253,35 @@ class TestCLIIntegration:
         mock_update_ts.assert_not_called()
         mock_notify.assert_not_called()
 
-    @patch("salt_docs.cli.should_check_for_updates")
-    @patch("salt_docs.cli.check_for_update")
-    @patch("salt_docs.cli.update_last_check_timestamp")
-    @patch("salt_docs.cli.print_update_notification")
+    @patch("wikigen.cli.should_check_for_updates")
+    @patch("wikigen.cli.check_for_update")
+    @patch("wikigen.cli.update_last_check_timestamp")
+    @patch("wikigen.cli.print_update_notification")
     def test_check_updates_no_notification_if_no_update(
         self, mock_notify, mock_update_ts, mock_check, mock_should
     ):
         """Test that no notification is shown if no update available."""
-        from salt_docs.cli import _check_for_updates_quietly
+        from wikigen.cli import _check_for_updates_quietly
 
         mock_should.return_value = True
         mock_check.return_value = None  # No update available
 
-        with patch("salt_docs.cli.get_version", return_value="0.1.5"):
+        with patch("wikigen.cli.get_version", return_value="0.1.5"):
             _check_for_updates_quietly()
 
         mock_check.assert_called_once()
         mock_update_ts.assert_called_once()
         mock_notify.assert_not_called()
 
-    @patch("salt_docs.cli.should_check_for_updates")
-    @patch("salt_docs.cli.check_for_update")
-    @patch("salt_docs.cli.update_last_check_timestamp")
-    @patch("salt_docs.cli.print_update_notification")
+    @patch("wikigen.cli.should_check_for_updates")
+    @patch("wikigen.cli.check_for_update")
+    @patch("wikigen.cli.update_last_check_timestamp")
+    @patch("wikigen.cli.print_update_notification")
     def test_check_updates_handles_exceptions_gracefully(
         self, mock_notify, mock_update_ts, mock_check, mock_should
     ):
         """Test that exceptions are handled gracefully."""
-        from salt_docs.cli import _check_for_updates_quietly
+        from wikigen.cli import _check_for_updates_quietly
 
         mock_should.return_value = True
         mock_check.side_effect = Exception("Unexpected error")

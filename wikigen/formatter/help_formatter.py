@@ -1,5 +1,5 @@
 """
-Enhanced help formatting for Salt Docs CLI.
+Enhanced help formatting for WikiGen CLI.
 Provides colored, structured help output with icons and tree structure.
 """
 

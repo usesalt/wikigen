@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
     - `--output-path`: Allows specifying a custom output directory (overriding config)
     - `--check-changes`: Exits with status code 1 if documentation changes are detected (for conditional PR creation)
     - `--update`: Merges new documentation with existing files instead of overwriting
-- **GitHub Actions Workflow** - Added `salt-docs.yml` template for quick setup
+- **GitHub Actions Workflow** - Added `wikigen.yml` template for quick setup
 - **Documentation** - Comprehensive CI/CD integration guide and examples
 
 ### Changed
@@ -55,11 +55,11 @@ All notable changes to this project will be documented in this file.
   - **Comprehensive Mode** - Full detailed documentation with extensive explanations and examples
 - **New CLI Argument**: `--mode` - Override documentation mode for a single run
   - Options: `minimal` or `comprehensive`
-  - Example: `salt-docs --repo <url> --mode comprehensive`
+  - Example: `wikigen --repo <url> --mode comprehensive`
 - **Configuration Field**: `documentation_mode` - Set default documentation mode in config
   - Default: `minimal`
-  - Can be set via `salt-docs config set documentation-mode <mode>`
-  - Interactive selection during `salt-docs init` setup wizard
+  - Can be set via `wikigen config set documentation-mode <mode>`
+  - Interactive selection during `wikigen init` setup wizard
 - **Comprehensive Test Suite** - Full test coverage for documentation mode configuration
 
 ### Changed
@@ -112,9 +112,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - **Cross-platform config directory** - Migrated config file location to OS-appropriate directories
-  - macOS/Linux: `~/.config/saltdocs/config.json` (or `$XDG_CONFIG_HOME/saltdocs/config.json`)
-  - Windows: `%APPDATA%\saltdocs\config.json`
-  - Previous location: `~/Documents/Salt Docs/.salt/config.json` (no longer used)
+  - macOS/Linux: `~/.config/wikigen/config.json` (or `$XDG_CONFIG_HOME/wikigen/config.json`)
+  - Windows: `%APPDATA%\wikigen\config.json`
+  - Previous location: `~/Documents/WikiGen/.salt/config.json` (no longer used)
 
 ### Improved
 - Automatic migration from legacy config location on first load
@@ -261,7 +261,7 @@ All notable changes to this project will be documented in this file.
 ## [0.1.0]
 
 ### Added
-- Initial release of Salt Docs CLI
+- Initial release of WikiGen CLI
 - AI-powered codebase analysis and documentation generation
 - Support for GitHub repositories and local directories
 - Configurable API key management with secure keyring storage
@@ -271,9 +271,9 @@ All notable changes to this project will be documented in this file.
 - LLM response caching for improved performance
 
 ### Features
-- `salt-docs init` - Initial setup wizard
-- `salt-docs config` - Configuration management
-- `salt-docs --repo <url>` - Analyze GitHub repository
-- `salt-docs --dir <path>` - Analyze local directory
+- `wikigen init` - Initial setup wizard
+- `wikigen config` - Configuration management
+- `wikigen --repo <url>` - Analyze GitHub repository
+- `wikigen --dir <path>` - Analyze local directory
 - Support for Python 3.10+ environments
 - Integration with Google Gemini AI

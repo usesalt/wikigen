@@ -1,13 +1,13 @@
 # Contributing
 
-Thank you for your interest in contributing to Salt Docs.
+Thank you for your interest in contributing to WikiGen.
 
 ## Development Setup
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/usesalt/salt-docs.git
-cd salt-docs
+git clone https://github.com/usesalt/wikigen.git
+cd wikigen
 ```
 
 2. Install development dependencies:

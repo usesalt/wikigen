@@ -24,7 +24,7 @@ logger.addHandler(file_handler)
 
 
 def get_cache_file_path() -> Path:
-    """Get the cache file path in the Salt Docs directory."""
+    """Get the cache file path in the WikiGen directory."""
     try:
         from ..config import DEFAULT_OUTPUT_DIR
 

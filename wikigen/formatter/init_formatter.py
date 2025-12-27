@@ -1,5 +1,5 @@
 """
-Init mode formatter for Salt Docs CLI.
+Init mode formatter for WikiGen CLI.
 Provides structured visual output for the configuration setup process.
 """
 

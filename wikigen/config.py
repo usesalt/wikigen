@@ -1,5 +1,5 @@
 """
-Configuration management for Salt Docs.
+Configuration management for WikiGen.
 Handles loading, saving, and merging configuration with CLI arguments.
 """
 
@@ -42,19 +42,19 @@ def _get_platform_config_base() -> Path:
 
 
 def _get_new_config_dir() -> Path:
-    """Return the new config directory for saltdocs under the platform base."""
-    return _get_platform_config_base() / "saltdocs"
+    """Return the new config directory for wikigen under the platform base."""
+    return _get_platform_config_base() / "wikigen"
 
 
 def _get_legacy_config_dir() -> Path:
     """Return the previous Documents-based config directory (for migration)."""
-    return Path.home() / "Documents" / "Salt Docs" / ".salt"
+    return Path.home() / "Documents" / "WikiGen" / ".salt"
 
 
 # Configuration paths
 CONFIG_DIR = _get_new_config_dir()
 CONFIG_FILE = CONFIG_DIR / "config.json"
-DEFAULT_OUTPUT_DIR = Path.home() / "Documents" / "Salt Docs"
+DEFAULT_OUTPUT_DIR = Path.home() / "Documents" / "WikiGen"
 
 
 def _migrate_legacy_config_if_needed() -> None:
@@ -233,9 +233,9 @@ def init_config() -> None:
     if keyring_available:
         try:
             if api_key:
-                keyring.set_password("salt-docs", provider_info["keyring_key"], api_key)
+                keyring.set_password("wikigen", provider_info["keyring_key"], api_key)
             if github_token:
-                keyring.set_password("salt-docs", "github_token", github_token)
+                keyring.set_password("wikigen", "github_token", github_token)
         except (OSError, RuntimeError, AttributeError):
             keyring_available = False
 
@@ -347,11 +347,11 @@ def load_config() -> Dict[str, Any]:
             for provider_id, provider_info in LLM_PROVIDERS.items():
                 keyring_key = provider_info.get("keyring_key")
                 if keyring_key:
-                    api_key = keyring.get_password("salt-docs", keyring_key)
+                    api_key = keyring.get_password("wikigen", keyring_key)
                     if api_key:
                         config[keyring_key] = api_key
 
-            github_token = keyring.get_password("salt-docs", "github_token")
+            github_token = keyring.get_password("wikigen", "github_token")
             if github_token:
                 config["github_token"] = github_token
         except (OSError, RuntimeError, AttributeError) as e:
@@ -458,7 +458,7 @@ def get_api_key() -> Optional[str]:
     api_key = None
     if keyring_key and KEYRING_AVAILABLE:
         try:
-            api_key = keyring.get_password("salt-docs", keyring_key)
+            api_key = keyring.get_password("wikigen", keyring_key)
         except (OSError, RuntimeError, AttributeError):
             pass
 

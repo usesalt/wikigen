@@ -29,16 +29,16 @@ jobs:
     
     - name: Lint with flake8
       run: |
-        flake8 salt_docs --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 salt_docs --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 wikigen --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 wikigen --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
     - name: Format check with black
       run: |
-        black --check salt_docs
+        black --check wikigen
     
     - name: Test with pytest
       run: |
-        pytest --cov=salt_docs --cov-report=xml
+        pytest --cov=wikigen --cov-report=xml
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3

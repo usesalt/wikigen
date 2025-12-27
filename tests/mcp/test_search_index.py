@@ -8,7 +8,7 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from salt_docs.mcp.search_index import FileIndexer
+from wikigen.mcp.search_index import FileIndexer
 
 
 def test_file_indexer_basic():

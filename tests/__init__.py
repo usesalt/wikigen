@@ -1,1 +1,1 @@
-# Tests for Salt Docs CLI
+# Tests for WikiGen CLI

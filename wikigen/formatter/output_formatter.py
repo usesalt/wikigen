@@ -1,5 +1,5 @@
 """
-Output formatting utilities for Salt Docs CLI.
+Output formatting utilities for WikiGen CLI.
 Provides tree-structured output with icons, colors, and timing.
 """
 
@@ -101,7 +101,7 @@ def print_header(version=None):
 
         version = __version__
 
-    print(f"{Colors.WHITE}SALT DOCS {Colors.LIGHT_GRAY}v{version}{Colors.RESET}")
+    print(f"{Colors.WHITE}WikiGen {Colors.LIGHT_GRAY}v{version}{Colors.RESET}")
 
 
 def print_info(label, value):
@@ -286,5 +286,5 @@ def print_update_notification(current_version: str, latest_version: str):
         f"{Colors.WHITE} → {Colors.WHITE}v{latest_version}{Colors.RESET}"
     )
     print(
-        f"{Colors.MEDIUM_GRAY}  To upgrade, run: {Colors.WHITE}pip install --upgrade salt-docs{Colors.RESET}"
+        f"{Colors.MEDIUM_GRAY}  To upgrade, run: {Colors.WHITE}pip install --upgrade wikigen{Colors.RESET}"
     )

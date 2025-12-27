@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "salt-docs"
+name = "wikigen"
 version = "0.3.0"
 description = "Wiki's for nerds, by nerds"
 readme = "README.md"
@@ -26,16 +26,16 @@ classifiers = [
 dependencies = ['pocketflow>=0.0.1', 'pyyaml>=6.0', 'requests>=2.28.0', 'gitpython>=3.1.0', 'google-genai>=1.9.0', 'pathspec>=0.11.0', 'keyring>=24.0.0', 'mcp>=1.19.0', 'faiss-cpu>=1.7.4', 'sentence-transformers>=2.2.0', 'numpy>=1.24.0']
 
 [project.scripts]
-salt-docs = "salt_docs.cli:main"
+wikigen = "wikigen.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/usesalt/salt-docs"
-Repository = "https://github.com/usesalt/salt-docs"
-Issues = "https://github.com/usesalt/salt-docs/issues"
+Homepage = "https://github.com/usesalt/wikigen"
+Repository = "https://github.com/usesalt/wikigen"
+Issues = "https://github.com/usesalt/wikigen/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["salt_docs*"]
+include = ["wikigen*"]
 
 [tool.pytest.ini_options]
 filterwarnings = [

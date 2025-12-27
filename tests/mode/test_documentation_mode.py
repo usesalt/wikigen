@@ -11,8 +11,8 @@ from unittest.mock import patch
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from salt_docs.config import load_config, save_config, CONFIG_FILE
-from salt_docs.defaults import DEFAULT_CONFIG
+from wikigen.config import load_config, save_config, CONFIG_FILE
+from wikigen.defaults import DEFAULT_CONFIG
 
 
 class TestDocumentationMode:
@@ -28,7 +28,7 @@ class TestDocumentationMode:
         """Test that documentation_mode can be saved and loaded."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.json"
-            with patch("salt_docs.config.CONFIG_FILE", config_file):
+            with patch("wikigen.config.CONFIG_FILE", config_file):
                 # Test minimal mode
                 test_config = {
                     "output_dir": "/tmp/test",
@@ -54,7 +54,7 @@ class TestDocumentationMode:
         """Test that config defaults to minimal when documentation_mode is not set."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.json"
-            with patch("salt_docs.config.CONFIG_FILE", config_file):
+            with patch("wikigen.config.CONFIG_FILE", config_file):
                 # Save config without documentation_mode
                 test_config = {
                     "output_dir": "/tmp/test",

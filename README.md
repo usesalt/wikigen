@@ -1,13 +1,11 @@
-![Salt Docs](assets/saltdocs.jpg)
+![WikiGen](assets/wikigen.png)
+
+## WIKIGEN
+
+[![PyPI](https://img.shields.io/badge/pypi-v0.2.4-blue)](https://pypi.org/project/wikigen/) [![Python](https://img.shields.io/badge/python-3.12+-blue)](https://www.python.org/) [![Downloads](https://img.shields.io/badge/downloads-3k+-brightgreen)](https://pypi.org/project/wikigen/) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![GitHub](https://img.shields.io/badge/github-usesalt%2Fwikigen-red)](https://github.com/usesalt/wikigen)
 
 
-## SALT DOCS
-
-[![PyPI](https://img.shields.io/badge/pypi-v0.2.4-blue)](https://pypi.org/project/salt-docs/) [![Python](https://img.shields.io/badge/python-3.12+-blue)](https://www.python.org/) [![Downloads](https://img.shields.io/badge/downloads-3k+-brightgreen)](https://pypi.org/project/salt-docs/) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![GitHub](https://img.shields.io/badge/github-usesalt%2Fsalt--docs-red)](https://github.com/usesalt/salt-docs)
-
-
-
-**Salt Docs** is a compact, human-readable documentation generator for codebases that minimizes tokens and makes structure easy for models to follow.  
+**WikiGen** (Previously named "salt-docs") is a compact, human-readable documentation generator for codebases that minimizes tokens and makes structure easy for models to follow.  
 It's intended for **LLM input** as a drop-in, lossless representation of your existing codebase.
 
 
@@ -15,13 +13,13 @@ It's intended for **LLM input** as a drop-in, lossless representation of your ex
 
 ### Option 1: Install from PyPI
 ```bash
-pip install salt-docs
+pip install wikigen
 ```
 
 ### Option 2: Install from source
 ```bash
-git clone https://github.com/usesalt/salt-docs.git
-cd salt-docs
+git clone https://github.com/usesalt/wikigen.git
+cd wikigen
 pip install -e .
 ```
 
@@ -31,32 +29,32 @@ pip install -e .
 Run the setup wizard to configure your API keys and preferences:
 
 ```bash
-salt-docs init
+wikigen init
 ```
 
 ### 2. Generate Documentation
 
 #### Analyze GitHub repository
 ```bash
-salt-docs run https://github.com/username/repo
+wikigen run https://github.com/username/repo
 ```
 
 #### Analyze local directory
 ```bash
-salt-docs run /path/to/your/codebase
+wikigen run /path/to/your/codebase
 ```
 
 #### With custom options
 ```bash
-salt-docs run https://github.com/username/repo --output /custom/path --language spanish --max-abstractions 10
+wikigen run https://github.com/username/repo --output /custom/path --language spanish --max-abstractions 10
 ```
 
 ## Configuration
 
-Salt Docs stores configuration in a per-user config file and uses your system's keyring for secure API key storage.
+WikiGen stores configuration in a per-user config file and uses your system's keyring for secure API key storage.
 
-- macOS/Linux: `~/.config/saltdocs/config.json` (or `$XDG_CONFIG_HOME/saltdocs/config.json`)
-- Windows: `%APPDATA%\saltdocs\config.json`
+- macOS/Linux: `~/.config/wikigen/config.json` (or `$XDG_CONFIG_HOME/wikigen/config.json`)
+- Windows: `%APPDATA%\wikigen\config.json`
 
 ### Configuration Options
 - `llm_provider`: LLM provider to use (gemini, openai, anthropic, openrouter, ollama) - default: gemini
@@ -74,59 +72,59 @@ Salt Docs stores configuration in a per-user config file and uses your system's 
 
 #### View Current Configuration
 ```bash
-salt-docs config show
+wikigen config show
 ```
 
 #### Update API Keys
 ```bash
 # Update API key for any provider (interactive)
-salt-docs config update-api-key gemini
-salt-docs config update-api-key openai
-salt-docs config update-api-key anthropic
-salt-docs config update-api-key openrouter
+wikigen config update-api-key gemini
+wikigen config update-api-key openai
+wikigen config update-api-key anthropic
+wikigen config update-api-key openrouter
 
 # Legacy command (still works, redirects to update-api-key)
-salt-docs config update-gemini-key
+wikigen config update-gemini-key
 
 # Update GitHub token (interactive)
-salt-docs config update-github-token
+wikigen config update-github-token
 
 # Update GitHub token directly
-salt-docs config update-github-token "your-token-here"
+wikigen config update-github-token "your-token-here"
 ```
 
 #### Update Other Settings
 ```bash
 # Change LLM provider
-salt-docs config set llm-provider openai
+wikigen config set llm-provider openai
 
 # Change LLM model
-salt-docs config set llm-model gpt-4o-mini
+wikigen config set llm-model gpt-4o-mini
 
 # Change default language
-salt-docs config set language spanish
+wikigen config set language spanish
 
 # Change max abstractions
-salt-docs config set max_abstractions 15
+wikigen config set max_abstractions 15
 
 # Disable caching
-salt-docs config set use_cache false
+wikigen config set use_cache false
 
 # Update output directory
-salt-docs config set output_dir /custom/path
+wikigen config set output_dir /custom/path
 ```
 
 ---
 ## CI/CD Integration
 
-Salt Docs can automatically generate and update documentation in your CI/CD pipeline. Perfect for keeping docs in sync with code changes!
+WikiGen can automatically generate and update documentation in your CI/CD pipeline. Perfect for keeping docs in sync with code changes!
 
 ### Quick Setup for GitHub Actions
 
-1. **Add workflow file** to `.github/workflows/salt-docs.yml`:
+1. **Add workflow file** to `.github/workflows/wikigen.yml`:
 
 ```yaml
-name: Salt Docs
+name: WikiGen
 
 on:
   push:
@@ -143,14 +141,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install salt-docs
-      - run: salt-docs run . --ci --output-path docs/
+      - run: pip install wikigen
+      - run: wikigen run . --ci --output-path docs/
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       - uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'docs: updated documentation for new changes'
-          branch: salt-docs/update-${{ github.run_number }}
+          branch: wikigen/update-${{ github.run_number }}
           title: 'Update Documentation'
 ```
 
@@ -179,7 +177,7 @@ See the complete [CI/CD Integration Guide](docs/ci-cd-integration.md) for:
 ---
 ## MCP Server Setup
 
-Salt Docs includes an MCP (Model Context Protocol) server that exposes your generated documentation to AI assistants in IDEs like Cursor, Continue.dev, and Claude Desktop.
+WikiGen includes an MCP (Model Context Protocol) server that exposes your generated documentation to AI assistants in IDEs like Cursor, Continue.dev, and Claude Desktop.
 
 ### MCP Tools Available
 
@@ -197,13 +195,13 @@ The MCP server provides these tools:
    - **macOS/Linux**: `~/.cursor/mcp.json`
    - **Windows**: `%APPDATA%\Cursor\mcp.json`
 
-2. Add the salt-docs server configuration:
+2. Add the wikigen server configuration:
 
 ```json
 {
   "mcpServers": {
-    "salt-docs": {
-      "command": "salt-docs",
+    "wikigen": {
+      "command": "wikigen",
       "args": ["mcp"]
     }
   }
@@ -214,7 +212,7 @@ The MCP server provides these tools:
 
 4. The AI assistant in Cursor can now access your documentation using tools like:
    - "What documentation do we have?"
-   - "Get me the documentation for 'SALT project"
+   - "Get me the documentation for 'WIKIGEN project"
    - "Read the README documentation"
 
 #### Claude Desktop
@@ -224,13 +222,13 @@ The MCP server provides these tools:
    - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
    - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
-2. Add the salt-docs server configuration:
+2. Add the wikigen server configuration:
 
 ```json
 {
   "mcpServers": {
-    "salt-docs": {
-      "command": "salt-docs",
+    "wikigen": {
+      "command": "wikigen",
       "args": ["mcp"]
     }
   }
@@ -241,23 +239,23 @@ The MCP server provides these tools:
 
 #### Troubleshooting
 
-- **Command not found**: Make sure `salt-docs` is in your PATH. You can verify by running `salt-docs --version` in your terminal.
-- **Server not starting**: Ensure you've run `salt-docs init` and have generated at least one documentation project.
-- **No docs found**: The MCP server discovers docs from your configured `output_dir`. Run `salt-docs config show` to check your output directory.
+- **Command not found**: Make sure `wikigen` is in your PATH. You can verify by running `wikigen --version` in your terminal.
+- **Server not starting**: Ensure you've run `wikigen init` and have generated at least one documentation project.
+- **No docs found**: The MCP server discovers docs from your configured `output_dir`. Run `wikigen config show` to check your output directory.
 
 ### Testing the MCP Server
 
 You can test the MCP server directly:
 
 ```bash
-salt-docs mcp
+wikigen mcp
 ```
 
 This will start the server in stdio mode (for MCP clients). To test locally, you can use the test scripts in the `tests/` directory.
 
 ## LLM Provider Support
 
-Salt Docs supports multiple LLM providers, allowing you to choose the best option for your needs:
+WikiGen supports multiple LLM providers, allowing you to choose the best option for your needs:
 
 ### Supported Providers
 
@@ -291,13 +289,13 @@ You can switch between providers at any time:
 
 ```bash
 # Switch to OpenAI
-salt-docs config set llm-provider openai
-salt-docs config set llm-model gpt-4o-mini
-salt-docs config update-api-key openai
+wikigen config set llm-provider openai
+wikigen config set llm-model gpt-4o-mini
+wikigen config update-api-key openai
 
 # Switch to Ollama (local)
-salt-docs config set llm-provider ollama
-salt-docs config set llm-model llama3.2
+wikigen config set llm-provider ollama
+wikigen config set llm-model llama3.2
 # No API key needed for Ollama!
 ```
 

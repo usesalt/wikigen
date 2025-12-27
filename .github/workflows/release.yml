@@ -63,7 +63,7 @@ jobs:
             repo: context.repo.repo,
             deployment_id: deployment.data.id,
             state: 'success',
-            environment_url: 'https://pypi.org/project/salt-docs/',
+            environment_url: 'https://pypi.org/project/wikigen/',
             description: 'Package published to PyPI'
           });
     
@@ -79,7 +79,7 @@ jobs:
         ## Installation
         
         \`\`\`bash
-        pip install salt-docs
+        pip install wikigen
         \`\`\`
         
         See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes."

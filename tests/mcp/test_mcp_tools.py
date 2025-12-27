@@ -7,8 +7,8 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from salt_docs.mcp.output_resources import discover_all_projects
-from salt_docs.config import get_output_dir
+from wikigen.mcp.output_resources import discover_all_projects
+from wikigen.config import get_output_dir
 
 
 def test_server_initialization():
@@ -18,7 +18,7 @@ def test_server_initialization():
     print("=" * 60)
 
     try:
-        from salt_docs.mcp.server import app
+        from wikigen.mcp.server import app
 
         print(f"✓ Server name: {app.name}")
         print("✓ Server initialized successfully")
@@ -39,7 +39,7 @@ def test_get_docs():
     print("Testing get_docs tool")
     print("=" * 60)
 
-    from salt_docs.mcp.server import get_docs
+    from wikigen.mcp.server import get_docs
 
     # First, get list of available docs
     projects = discover_all_projects()
@@ -103,8 +103,8 @@ def test_search_docs():
     print("Testing search_docs tool")
     print("=" * 60)
 
-    from salt_docs.mcp.server import search_docs
-    from salt_docs.mcp.search_index import FileIndexer
+    from wikigen.mcp.server import search_docs
+    from wikigen.mcp.search_index import FileIndexer
 
     # Ensure we have an index
     output_dir = get_output_dir()
@@ -186,8 +186,8 @@ def test_index_directories():
     print("Testing index_directories tool")
     print("=" * 60)
 
-    from salt_docs.mcp.server import index_directories
-    from salt_docs.mcp.search_index import FileIndexer
+    from wikigen.mcp.server import index_directories
+    from wikigen.mcp.search_index import FileIndexer
 
     output_dir = get_output_dir()
 

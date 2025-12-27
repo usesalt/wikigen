@@ -1,5 +1,5 @@
 """
-Version checking utilities for Salt Docs CLI.
+Version checking utilities for WikiGen CLI.
 Queries PyPI API to check for available updates.
 """
 
@@ -8,7 +8,7 @@ from typing import Optional
 
 
 def fetch_latest_version(
-    package_name: str = "salt-docs", timeout: float = 5.0
+    package_name: str = "wikigen", timeout: float = 5.0
 ) -> Optional[str]:
     """
     Fetch the latest version from PyPI API.

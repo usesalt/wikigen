@@ -8,8 +8,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Import directly using the file path to avoid __init__ importing server
-from salt_docs.mcp.output_resources import discover_all_projects
-from salt_docs.config import get_output_dir
+from wikigen.mcp.output_resources import discover_all_projects
+from wikigen.config import get_output_dir
 
 print("=" * 60)
 print("Testing Output Directory Resource Mapping")

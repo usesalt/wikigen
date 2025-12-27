@@ -9,7 +9,7 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from salt_docs.config import (
+from wikigen.config import (
     get_llm_provider,
     get_llm_model,
     get_api_key,
@@ -17,7 +17,7 @@ from salt_docs.config import (
     save_config,
     DEFAULT_CONFIG,
 )
-from salt_docs.utils.llm_providers import get_provider_info, requires_api_key
+from wikigen.utils.llm_providers import get_provider_info, requires_api_key
 
 
 def test_config_defaults():

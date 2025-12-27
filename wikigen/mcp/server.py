@@ -1,4 +1,4 @@
-"""MCP server implementation for salt-docs."""
+"""MCP server implementation for wikigen."""
 
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -12,7 +12,7 @@ from .search_index import FileIndexer
 # Initialize the MCP server
 # Instructions help editors/clients understand what this server provides
 app = FastMCP(
-    "salt-docs",
+    "wikigen",
     instructions=(
         "Expose local wiki markdown files as MCP tools. "
         "Available tools: search_docs (semantic search across indexed directories), "

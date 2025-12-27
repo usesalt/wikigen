@@ -1,5 +1,5 @@
 """
-Tests for CI/CD integration features in Salt Docs CLI.
+Tests for CI/CD integration features in WikiGen CLI.
 """
 
 import pytest
@@ -11,7 +11,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from salt_docs.cli import main, _run_documentation_generation
+from wikigen.cli import main, _run_documentation_generation
 
 
 class TestCIIntegration:
@@ -20,13 +20,13 @@ class TestCIIntegration:
     def test_ci_flag_parsing(self):
         """Test that --ci flag is correctly parsed and passed to generation."""
         with (
-            patch("salt_docs.cli.check_config_exists", return_value=True),
-            patch("salt_docs.cli.load_config", return_value={"output_dir": "docs"}),
-            patch("salt_docs.cli._run_documentation_generation") as mock_run,
+            patch("wikigen.cli.check_config_exists", return_value=True),
+            patch("wikigen.cli.load_config", return_value={"output_dir": "docs"}),
+            patch("wikigen.cli._run_documentation_generation") as mock_run,
         ):
 
             # Test with explicit --ci flag
-            with patch("sys.argv", ["salt-docs", "run", ".", "--ci"]):
+            with patch("sys.argv", ["wikigen", "run", ".", "--ci"]):
                 main()
                 args = mock_run.call_args[0][2]
                 assert args.ci is True
@@ -55,8 +55,8 @@ class TestCIIntegration:
         # Test with CI=true environment variable
         with (
             patch.dict(os.environ, {"CI": "true"}),
-            patch("salt_docs.cli.create_wiki_flow") as mock_flow_factory,
-            patch("salt_docs.cli.print_info") as mock_print_info,
+            patch("wikigen.cli.create_wiki_flow") as mock_flow_factory,
+            patch("wikigen.cli.print_info") as mock_print_info,
         ):
 
             mock_flow = MagicMock()
@@ -92,8 +92,8 @@ class TestCIIntegration:
         }
 
         with (
-            patch("salt_docs.cli.create_wiki_flow") as mock_flow_factory,
-            patch("salt_docs.cli.print_info"),
+            patch("wikigen.cli.create_wiki_flow") as mock_flow_factory,
+            patch("wikigen.cli.print_info"),
         ):
 
             mock_flow = MagicMock()
@@ -126,9 +126,9 @@ class TestCIIntegration:
         }
 
         with (
-            patch("salt_docs.cli.create_wiki_flow") as mock_flow_factory,
-            patch("salt_docs.cli.print_info"),
-            patch("salt_docs.cli.print_final_success"),
+            patch("wikigen.cli.create_wiki_flow") as mock_flow_factory,
+            patch("wikigen.cli.print_info"),
+            patch("wikigen.cli.print_final_success"),
         ):
 
             mock_flow = MagicMock()
@@ -166,9 +166,9 @@ class TestCIIntegration:
         }
 
         with (
-            patch("salt_docs.cli.create_wiki_flow") as mock_flow_factory,
-            patch("salt_docs.cli.print_info"),
-            patch("salt_docs.cli.print_final_success"),
+            patch("wikigen.cli.create_wiki_flow") as mock_flow_factory,
+            patch("wikigen.cli.print_info"),
+            patch("wikigen.cli.print_final_success"),
         ):
 
             mock_flow = MagicMock()

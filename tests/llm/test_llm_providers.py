@@ -7,7 +7,7 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from salt_docs.utils.llm_providers import (
+from wikigen.utils.llm_providers import (
     get_provider_list,
     get_provider_info,
     get_display_name,

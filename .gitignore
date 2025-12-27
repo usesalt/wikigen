@@ -14,7 +14,7 @@ __pycache__/
 
 # Python package build artifacts
 *.egg-info/
-salt_docs.egg-info/
+wikigen.egg-info/
 
 # Environment files
 .env

@@ -1,5 +1,5 @@
 """
-Default configuration values for Salt Docs.
+Default configuration values for WikiGen.
 """
 
 # Default file patterns for inclusion
@@ -58,7 +58,7 @@ DEFAULT_EXCLUDE_PATTERNS = {
 
 # Default configuration values
 DEFAULT_CONFIG = {
-    "output_dir": "~/Documents/Salt Docs",
+    "output_dir": "~/Documents/WikiGen",
     "language": "english",
     "max_abstractions": 10,
     "max_file_size": 100000,

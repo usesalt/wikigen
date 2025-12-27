@@ -9,9 +9,9 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from salt_docs.mcp.search_index import FileIndexer
-from salt_docs.mcp.chunking import chunk_markdown
-from salt_docs.mcp.embeddings import get_embedding, get_embeddings_batch
+from wikigen.mcp.search_index import FileIndexer
+from wikigen.mcp.chunking import chunk_markdown
+from wikigen.mcp.embeddings import get_embedding, get_embeddings_batch
 
 
 def create_test_documents(tmp_path: Path):

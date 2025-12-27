@@ -43,12 +43,12 @@ We follow a coordinated disclosure process:
 
 ## Security Considerations
 
-Salt Docs handles sensitive information including:
+WikiGen handles sensitive information including:
 - API keys for LLM providers (stored in system keyring)
 - GitHub personal access tokens
 - Generated documentation from private repositories
 
-When using Salt Docs:
+When using WikiGen:
 - Never commit API keys or tokens to version control
 - Use environment variables or the secure keyring storage provided by the tool
 - Review the documentation generated from private repositories before sharing publicly
@@ -60,5 +60,5 @@ When using Salt Docs:
 - Rotate API keys regularly
 - Use GitHub tokens with minimal required permissions
 - Review generated documentation for sensitive information before publishing
-- Run Salt Docs in secure environments when processing sensitive codebases
+- Run WikiGen in secure environments when processing sensitive codebases
 

@@ -1,5 +1,5 @@
 """
-Metadata package for Salt Docs.
+Metadata package for WikiGen.
 Centralized source of truth for project information.
 """
 

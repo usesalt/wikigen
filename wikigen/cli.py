@@ -1,5 +1,5 @@
 """
-CLI entry point for Salt Docs.
+CLI entry point for WikiGen.
 """
 
 import sys
@@ -250,7 +250,7 @@ def main():
 
             # Check if config exists, if not, prompt user to run init
             if not check_config_exists():
-                print("✘ Salt Docs is not configured yet.")
+                print("✘ WikiGen is not configured yet.")
                 print(
                     f"Please run '{CLI_ENTRY_POINT} init' to set up your configuration first."
                 )
@@ -284,7 +284,7 @@ def main():
 
     # Check if config exists, if not, prompt user to run init
     if not check_config_exists():
-        print("✘ Salt Docs is not configured yet.")
+        print("✘ WikiGen is not configured yet.")
         print(
             f"Please run '{CLI_ENTRY_POINT} init' to set up your configuration first."
         )
@@ -339,7 +339,7 @@ def _add_common_arguments(parser, config):
         "-v",
         "--version",
         action="version",
-        version=f"salt-docs {get_version()}",
+        version=f"wikigen {get_version()}",
     )
 
     parser.add_argument(
@@ -453,9 +453,9 @@ def _check_for_updates_quietly():
 
 
 def handle_config_command():
-    """Handle salt-docs config commands."""
+    """Handle wikigen config commands."""
     if len(sys.argv) < 3:
-        print("Usage: salt-docs config <command>")
+        print("Usage: wikigen config <command>")
         print("Commands:")
         print("  show                        - Show current configuration")
         print("  set <key> <value>           - Set a configuration value")
@@ -466,9 +466,9 @@ def handle_config_command():
             "  update-github-token [token]  - Update GitHub token (interactive if no token provided)"
         )
         print("\nExamples:")
-        print("  salt-docs config set llm-provider openai")
-        print("  salt-docs config set llm-model gpt-4o-mini")
-        print("  salt-docs config update-api-key gemini")
+        print("  wikigen config set llm-provider openai")
+        print("  wikigen config set llm-model gpt-4o-mini")
+        print("  wikigen config update-api-key gemini")
         return
 
     command = sys.argv[2]
@@ -477,16 +477,16 @@ def handle_config_command():
         show_config()
     elif command == "set":
         if len(sys.argv) < 5:
-            print("Usage: salt-docs config set <key> <value>")
-            print("Example: salt-docs config set language spanish")
-            print("Example: salt-docs config set llm-provider openai")
+            print("Usage: wikigen config set <key> <value>")
+            print("Example: wikigen config set language spanish")
+            print("Example: wikigen config set llm-provider openai")
             return
         key = sys.argv[3]
         value = sys.argv[4]
         set_config_value(key, value)
     elif command == "update-api-key":
         if len(sys.argv) < 4:
-            print("Usage: salt-docs config update-api-key <provider>")
+            print("Usage: wikigen config update-api-key <provider>")
             print("Providers: gemini, openai, anthropic, openrouter")
             return
         provider = sys.argv[3]
@@ -504,7 +504,7 @@ def handle_config_command():
             update_github_token()
     else:
         print(f"Unknown command: {command}")
-        print("Run 'salt-docs config' to see available commands")
+        print("Run 'wikigen config' to see available commands")
 
 
 def show_config():
@@ -514,7 +514,7 @@ def show_config():
         return
 
     config = load_config()
-    print(" Current Salt Docs Configuration:")
+    print(" Current WikiGen Configuration:")
     print(f"  LLM Provider: {config.get('llm_provider', 'Not set')}")
     print(f"  LLM Model: {config.get('llm_model', 'Not set')}")
     print(f"  Output Directory: {config.get('output_dir', 'Not set')}")
@@ -606,11 +606,11 @@ def _update_secret(
     if KEYRING_AVAILABLE:
         try:
             if secret_value:
-                keyring.set_password("salt-docs", secret_key, secret_value)
+                keyring.set_password("wikigen", secret_key, secret_value)
                 print(f"✓ {display_name} updated securely in keyring")
                 return
             elif allow_empty:
-                keyring.delete_password("salt-docs", secret_key)
+                keyring.delete_password("wikigen", secret_key)
                 print(f"✓ {display_name} removed from keyring")
                 return
             else:

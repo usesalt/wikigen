@@ -1,6 +1,6 @@
-# salt-docs
+# wikigen
 
-`salt-docs` is a **local-first** CLI tool designed to _auto-generate wikis and documentation_ from codebases, addressing the challenge of context loss across repositories. Its core functionality is driven by the **Documentation Generation Pipeline**, which _crawls and parses_ source code (from local directories or GitHub), employs **Large Language Models (LLMs) via a BYOK (Bring Your Own Key) model** to _identify and extract key abstractions_, and then _formats this information into structured markdown files_.
+`wikigen` is a **local-first** CLI tool designed to _auto-generate wikis and documentation_ from codebases, addressing the challenge of context loss across repositories. Its core functionality is driven by the **Documentation Generation Pipeline**, which _crawls and parses_ source code (from local directories or GitHub), employs **Large Language Models (LLMs) via a BYOK (Bring Your Own Key) model** to _identify and extract key abstractions_, and then _formats this information into structured markdown files_.
 
 A pivotal architectural component is the **MCP Server & AI Integration**, which establishes a _local Model Context Protocol server_. This server exposes the generated documentation as a set of _queryable tools_ (`list_docs`, `get_docs`, `search_docs`, `index_directories`) to AI coding assistants like Cursor, Continue, and Claude Desktop, enabling them to retrieve _project-specific, relevant context_ directly from the codebase's documentation.
 
@@ -36,7 +36,7 @@ flowchart TD
 
 ## Component 1: Local Configuration Management
 
-This component is the bedrock for personalizing and securing the `salt-docs` experience for every engineer. In complex development environments, engineers juggle numerous projects, often requiring unique settings, API keys, and preferences. The **Local Configuration Management** component addresses the critical need for a robust, secure, and user-friendly system to manage all user-specific operational parameters, ensuring both ease of use and stringent privacy.
+This component is the bedrock for personalizing and securing the `wikigen` experience for every engineer. In complex development environments, engineers juggle numerous projects, often requiring unique settings, API keys, and preferences. The **Local Configuration Management** component addresses the critical need for a robust, secure, and user-friendly system to manage all user-specific operational parameters, ensuring both ease of use and stringent privacy.
 
 ### Core Responsibilities
 
@@ -44,9 +44,9 @@ The primary goal of this abstraction is to handle all aspects of user configurat
 
 *   **Secure Credential Storage**: Safely stores sensitive information like Gemini API keys and GitHub tokens using OS-native keyring services, preventing plain-text storage and unauthorized access.
 *   **Persistent User Preferences**: Manages user-defined settings such as default output directories, preferred languages, caching preferences, and file pattern filters.
-*   **OS-Appropriate Directory Handling**: Ensures configuration files are stored in standard, OS-specific locations (e.g., `~/.config/saltdocs` on macOS/Linux and `%APPDATA%\saltdocs` on Windows) for consistency and discoverability.
-*   **Interactive Initial Setup**: Provides a guided wizard (`salt-docs init`) for first-time users to set up essential configurations and credentials effortlessly.
-*   **Configuration Management CLI**: Offers a comprehensive command-line interface (`salt-docs config`) for viewing, updating, and resetting specific configuration parameters.
+*   **OS-Appropriate Directory Handling**: Ensures configuration files are stored in standard, OS-specific locations (e.g., `~/.config/wikigen` on macOS/Linux and `%APPDATA%\wikigen` on Windows) for consistency and discoverability.
+*   **Interactive Initial Setup**: Provides a guided wizard (`wikigen init`) for first-time users to set up essential configurations and credentials effortlessly.
+*   **Configuration Management CLI**: Offers a comprehensive command-line interface (`wikigen config`) for viewing, updating, and resetting specific configuration parameters.
 *   **Automatic Configuration Migration**: Gracefully handles transitions from older configuration formats or locations, ensuring backward compatibility and a seamless upgrade experience.
 *   **Upholding Privacy**: A foundational principle is that all user data and credentials remain local to the machine, never being transmitted to external services beyond direct interaction with the respective API providers (e.g., Google Gemini).
 
@@ -59,14 +59,14 @@ Sensitive data, particularly API keys and tokens, are never stored directly in t
 #### OS-Appropriate Configuration Paths
 
 Adhering to operating system conventions is crucial for maintainability and user expectations.
-*   On **macOS and Linux**, configurations are stored under `~/.config/saltdocs/config.json` or `$XDG_CONFIG_HOME/saltdocs/config.json`.
-*   On **Windows**, it utilizes `%APPDATA%\saltdocs\config.json`.
+*   On **macOS and Linux**, configurations are stored under `~/.config/wikigen/config.json` or `$XDG_CONFIG_HOME/wikigen/config.json`.
+*   On **Windows**, it utilizes `%APPDATA%\wikigen\config.json`.
 
-This ensures that `salt-docs` integrates cleanly with the user's environment. The `CHANGELOG.md` reflects this significant improvement in version `0.1.8`.
+This ensures that `wikigen` integrates cleanly with the user's environment. The `CHANGELOG.md` reflects this significant improvement in version `0.1.8`.
 
 #### Interactive Setup Wizard
 
-The `salt-docs init` command guides users through a simple, interactive process to set up their environment. This includes prompting for necessary API keys (with input masking) and setting default preferences, dramatically reducing the barrier to entry for new users.
+The `wikigen init` command guides users through a simple, interactive process to set up their environment. This includes prompting for necessary API keys (with input masking) and setting default preferences, dramatically reducing the barrier to entry for new users.
 
 #### Configuration Schema
 
@@ -74,7 +74,7 @@ The `config.json` file stores non-sensitive preferences. A typical configuration
 
 ```json
 {
-  "output_dir": "/Users/user/Documents/Salt Docs",
+  "output_dir": "/Users/user/Documents/WikiGen",
   "language": "english",
   "max_abstractions": 5,
   "max_file_size": 102400,
@@ -85,7 +85,7 @@ The `config.json` file stores non-sensitive preferences. A typical configuration
 }
 ```
 
-These settings are fully configurable via the `salt-docs config set` commands.
+These settings are fully configurable via the `wikigen config set` commands.
 
 ### Internal Implementation
 
@@ -96,14 +96,14 @@ The **Local Configuration Management** component operates through a central conf
 ```mermaid
 sequenceDiagram
     participant User
-    participant CLI as salt-docs CLI
+    participant CLI as wikigen CLI
     participant ConfigMgr as Configuration Manager
     participant FileSys as Filesystem (config.json)
     participant Keyring as System Keyring
 
-    User->>CLI: `salt-docs init` or `salt-docs config`
+    User->>CLI: `wikigen init` or `wikigen config`
     CLI->>ConfigMgr: Initialize/Load config
-    ConfigMgr->>FileSys: Check/Create config file (e.g., ~/.config/saltdocs/config.json)
+    ConfigMgr->>FileSys: Check/Create config file (e.g., ~/.config/wikigen/config.json)
     FileSys-->>ConfigMgr: Returns config data
     alt If sensitive data requested (e.g., API key)
         ConfigMgr->>Keyring: Retrieve credential (e.g., Gemini API Key)
@@ -140,10 +140,10 @@ def get_config_path() -> str:
     """Determines the OS-appropriate configuration directory."""
     if sys.platform == "win32":
         base_dir = os.environ.get("APPDATA")
-        config_dir = os.path.join(base_dir, "saltdocs")
+        config_dir = os.path.join(base_dir, "wikigen")
     # ... similar logic for macOS using ~/Library/Application Support ...
     else: # Example for Linux/other standard path
-        config_dir = os.path.join(os.path.expanduser("~"), ".config", "saltdocs")
+        config_dir = os.path.join(os.path.expanduser("~"), ".config", "wikigen")
     
     os.makedirs(config_dir, exist_ok=True)
     return os.path.join(config_dir, "config.json")
@@ -167,7 +167,7 @@ def load_config(config_path: str) -> dict:
         with open(config_path, 'r') as f:
             config_data.update(json.load(f)) # Merge existing config
     
-    config_data.setdefault("output_dir", os.path.join(os.path.expanduser("~"), "Documents", "Salt Docs"))
+    config_data.setdefault("output_dir", os.path.join(os.path.expanduser("~"), "Documents", "WikiGen"))
     config_data.setdefault("language", "english")
     # ... other defaults ...
     return config_data
@@ -197,7 +197,7 @@ Interaction with the system keyring is typically abstracted through a dedicated 
 
 ```python
 # Part of a larger module, depends on the 'keyring' library
-SERVICE_NAME = "salt-docs"
+SERVICE_NAME = "wikigen"
 
 def get_secret(key_name: str) -> str | None:
     """Retrieves a secret from the system keyring."""
@@ -211,14 +211,14 @@ def set_secret(key_name: str, value: str):
 ```
 *Explanation*: These functions provide a simple interface for interacting with the system keyring. `SERVICE_NAME` helps categorize credentials within the keyring, and the actual keyring calls are abstracted away in this simplified representation.
 
-#### Initial Setup Wizard (`salt-docs init`)
+#### Initial Setup Wizard (`wikigen init`)
 
 The `init` command orchestrates the initial configuration by calling the above functions interactively. It prompts the user for necessary information, uses `set_secret` for API keys, and `save_config` for general preferences.
 
 ```python
 # Simplified snippet from init.py, depends on 'rich.prompt' and config functions
 def run_init_wizard():
-    print("Welcome to Salt Docs CLI setup wizard!")
+    print("Welcome to WikiGen CLI setup wizard!")
     
     # Prompt for Gemini API Key
     gemini_key = Prompt.ask("Enter your Gemini API key", password=True)
@@ -234,14 +234,14 @@ def run_init_wizard():
 
 ### Concrete Usage Examples
 
-The `salt-docs` CLI provides direct access to manage configurations.
+The `wikigen` CLI provides direct access to manage configurations.
 
 #### 1. Initial Setup with Wizard
 
 First-time users will run the interactive setup wizard:
 
 ```bash
-salt-docs init
+wikigen init
 ```
 This command will guide you through setting up your Gemini API key, GitHub token (optional), and other core preferences, saving them securely.
 
@@ -250,12 +250,12 @@ This command will guide you through setting up your Gemini API key, GitHub token
 To inspect your current non-sensitive settings:
 
 ```bash
-salt-docs config show
+wikigen config show
 ```
 Output (example):
 ```json
 {
-  "output_dir": "/Users/user/Documents/Salt Docs",
+  "output_dir": "/Users/user/Documents/WikiGen",
   "language": "english",
   "max_abstractions": 5,
   "max_file_size": 102400,
@@ -271,20 +271,20 @@ Output (example):
 To update your Gemini API key:
 
 ```bash
-salt-docs config update-gemini-key
+wikigen config update-gemini-key
 # You will be prompted to enter the new key securely.
 ```
 
 Alternatively, for non-interactive updates (e.g., in scripts, though generally less secure for secrets):
 
 ```bash
-salt-docs config update-gemini-key "your-new-gemini-api-key-here"
+wikigen config update-gemini-key "your-new-gemini-api-key-here"
 ```
 
 Similarly for the GitHub token:
 
 ```bash
-salt-docs config update-github-token
+wikigen config update-github-token
 ```
 
 #### 4. Modifying General Settings
@@ -292,24 +292,24 @@ salt-docs config update-github-token
 To change the default language for generated documentation to Spanish:
 
 ```bash
-salt-docs config set language spanish
+wikigen config set language spanish
 ```
 
 To disable LLM response caching:
 
 ```bash
-salt-docs config set use_cache false
+wikigen config set use_cache false
 ```
 
 To update the default output directory:
 
 ```bash
-salt-docs config set output_dir /path/to/my/custom/docs
+wikigen config set output_dir /path/to/my/custom/docs
 ```
 
 ### Key Takeaways
 
-The **Local Configuration Management** component is essential for providing a personalized, secure, and user-friendly experience within `salt-docs`. It effectively:
+The **Local Configuration Management** component is essential for providing a personalized, secure, and user-friendly experience within `wikigen`. It effectively:
 
 *   **Secures sensitive credentials** through system keyring integration.
 *   **Manages user preferences** in OS-appropriate file system locations.
@@ -323,7 +323,7 @@ This component forms the foundational layer upon which other features like the [
 
 ## Component 2: Documentation Generation Pipeline
 
-Building upon the foundational settings established by the [Local Configuration Management](01_local_configuration_management_.md) component, the **Documentation Generation Pipeline** is the core engine of `salt-docs`. It transforms raw source code into intelligent, structured, and human-readable documentation.
+Building upon the foundational settings established by the [Local Configuration Management](01_local_configuration_management_.md) component, the **Documentation Generation Pipeline** is the core engine of `wikigen`. It transforms raw source code into intelligent, structured, and human-readable documentation.
 
 ### Core Responsibilities
 
@@ -368,7 +368,7 @@ The following sequence diagram illustrates the high-level flow when a user initi
 ```mermaid
 sequenceDiagram
     participant User
-    participant CLI as salt-docs CLI
+    participant CLI as wikigen CLI
     participant PipelineMgr as Pipeline Manager
     participant ConfigMgr as Config Manager
     participant CodeCrawler as Code Crawler
@@ -376,7 +376,7 @@ sequenceDiagram
     participant DocFormatter as Doc Formatter
     participant FileSys as Filesystem
 
-    User->>CLI: `salt-docs --repo <url>` or `--dir <path>`
+    User->>CLI: `wikigen --repo <url>` or `--dir <path>`
     CLI->>PipelineMgr: Initiate generation(source, opts)
     PipelineMgr->>ConfigMgr: Load configuration & credentials
     ConfigMgr-->>PipelineMgr: Returns config (output_dir, api_key, filters)
@@ -398,16 +398,16 @@ sequenceDiagram
 
 #### Code Walkthrough
 
-The core logic of the pipeline is typically initiated by the `salt-docs` CLI command, which then delegates to a central pipeline manager.
+The core logic of the pipeline is typically initiated by the `wikigen` CLI command, which then delegates to a central pipeline manager.
 
 ##### 1. Entry Point and Configuration Loading
 
 The CLI command parses user arguments and then calls the pipeline's main function, which immediately loads the necessary configuration from the [Local Configuration Management](01_local_configuration_management_.md) component.
 
 ```python
-# Simplified excerpt from salt_docs/cli.py
-from salt_docs.config import load_config, get_secret, get_config_path
-from salt_docs.pipeline import run_documentation_pipeline
+# Simplified excerpt from wikigen/cli.py
+from wikigen.config import load_config, get_secret, get_config_path
+from wikigen.pipeline import run_documentation_pipeline
 
 def main():
     # ... argument parsing for repo/dir, output, language, etc.
@@ -432,14 +432,14 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-*Explanation*: The `main` function in the CLI module acts as the entry point. It first loads the global configuration and any sensitive API keys using functions from `salt_docs.config` (Component 1). It then prepares these parameters, potentially overriding defaults with command-line arguments, and passes them to the `run_documentation_pipeline` function which orchestrates the generation process.
+*Explanation*: The `main` function in the CLI module acts as the entry point. It first loads the global configuration and any sensitive API keys using functions from `wikigen.config` (Component 1). It then prepares these parameters, potentially overriding defaults with command-line arguments, and passes them to the `run_documentation_pipeline` function which orchestrates the generation process.
 
 ##### 2. Codebase Crawling
 
 The pipeline's `CodeCrawler` component is responsible for recursively scanning directories or cloning repositories, filtering files based on configured patterns.
 
 ```python
-# Simplified excerpt from salt_docs/pipeline.py (or a crawler module)
+# Simplified excerpt from wikigen/pipeline.py (or a crawler module)
 import os
 
 def crawl_codebase(source_path: str, include_patterns: list, exclude_patterns: list, max_size: int) -> dict:
@@ -464,8 +464,8 @@ def crawl_codebase(source_path: str, include_patterns: list, exclude_patterns: l
 This stage involves making calls to the LLM. Caching is crucial here to prevent redundant API calls.
 
 ```python
-# Simplified excerpt from salt_docs/llm_service.py
-from salt_docs.cache import get_cache, set_cache # From Component 1 context for caching
+# Simplified excerpt from wikigen/llm_service.py
+from wikigen.cache import get_cache, set_cache # From Component 1 context for caching
 
 def identify_abstractions_with_llm(code_content: str, api_key: str, use_cache: bool) -> dict:
     """Uses LLM to identify abstractions, with caching."""
@@ -494,7 +494,7 @@ def identify_abstractions_with_llm(code_content: str, api_key: str, use_cache: b
 The structured output from the LLM is then transformed into formatted Markdown.
 
 ```python
-# Simplified excerpt from salt_docs/doc_formatter.py
+# Simplified excerpt from wikigen/doc_formatter.py
 def format_to_markdown(llm_output: dict, language: str) -> str:
     """Converts structured LLM output into Markdown."""
     markdown_content = f"# {llm_output['component_name']}\n\n"
@@ -513,23 +513,23 @@ def format_to_markdown(llm_output: dict, language: str) -> str:
 
 ### Concrete Usage Examples
 
-Engineers interact with the Documentation Generation Pipeline primarily through the `salt-docs` CLI.
+Engineers interact with the Documentation Generation Pipeline primarily through the `wikigen` CLI.
 
 #### 1. Generating Docs for a GitHub Repository
 
-To generate documentation for a public GitHub repository, `salt-docs` will clone it temporarily, process it, and then delete the temporary clone. Your GitHub token (if configured via `salt-docs init` or `salt-docs config update-github-token`) will be used for private repositories.
+To generate documentation for a public GitHub repository, `wikigen` will clone it temporarily, process it, and then delete the temporary clone. Your GitHub token (if configured via `wikigen init` or `wikigen config update-github-token`) will be used for private repositories.
 
 ```bash
-salt-docs --repo https://github.com/my-org/my-project
+wikigen --repo https://github.com/my-org/my-project
 ```
-This command processes the specified GitHub repository and saves the generated Markdown files to your configured `output_dir` (e.g., `~/Documents/Salt Docs/my-project`).
+This command processes the specified GitHub repository and saves the generated Markdown files to your configured `output_dir` (e.g., `~/Documents/WikiGen/my-project`).
 
 #### 2. Generating Docs for a Local Directory
 
 For codebases residing on your local machine:
 
 ```bash
-salt-docs --dir /path/to/my/local/codebase
+wikigen --dir /path/to/my/local/codebase
 ```
 This command scans the local directory and generates documentation, again saving it to the default or specified output directory.
 
@@ -538,7 +538,7 @@ This command scans the local directory and generates documentation, again saving
 You can override default settings (established by [Local Configuration Management](01_local_configuration_management_.md)) directly via CLI flags for specific runs:
 
 ```bash
-salt-docs --dir /path/to/project \
+wikigen --dir /path/to/project \
           --output /custom/docs/output \
           --language spanish \
           --include "*.py" "*.txt" \
@@ -550,7 +550,7 @@ This example shows how to direct the output to a custom path, generate documenta
 
 ### Key Takeaways
 
-The **Documentation Generation Pipeline** is the dynamic heart of `salt-docs`, effectively addressing the challenge of maintaining current and comprehensive codebase documentation.
+The **Documentation Generation Pipeline** is the dynamic heart of `wikigen`, effectively addressing the challenge of maintaining current and comprehensive codebase documentation.
 
 *   It orchestrates the **end-to-end process** from source code ingestion to formatted Markdown output.
 *   It leverages **LLMs for intelligent analysis**, identifying core abstractions and their context.
@@ -565,7 +565,7 @@ This component transforms your codebase into an accessible and queryable documen
 
 ## Component 3: Fast Documentation Search
 
-Building upon the structured documentation produced by the [Documentation Generation Pipeline](02_documentation_generation_pipeline_.md), the **Fast Documentation Search** component introduces a critical capability: the ability to rapidly locate relevant information across all generated Markdown files. In large codebases with extensive documentation, finding specific details quickly is paramount for both human engineers and AI assistants. This component ensures that the rich context generated by `salt-docs` is not just available, but also highly accessible.
+Building upon the structured documentation produced by the [Documentation Generation Pipeline](02_documentation_generation_pipeline_.md), the **Fast Documentation Search** component introduces a critical capability: the ability to rapidly locate relevant information across all generated Markdown files. In large codebases with extensive documentation, finding specific details quickly is paramount for both human engineers and AI assistants. This component ensures that the rich context generated by `wikigen` is not just available, but also highly accessible.
 
 ### Core Responsibilities
 
@@ -595,11 +595,11 @@ This makes it an ideal choice for searching through natural language documentati
 
 #### Automatic Indexing
 
-When `salt-docs` is run or a search is initiated for the first time in a given directory, the system automatically indexes all relevant Markdown files. This process involves:
+When `wikigen` is run or a search is initiated for the first time in a given directory, the system automatically indexes all relevant Markdown files. This process involves:
 1.  Scanning the configured `output_dir` (from [Local Configuration Management](01_local_configuration_management_.md)).
 2.  Reading the content of each Markdown file.
 3.  Inserting the file's path, name, and content into the SQLite FTS5 index.
-This indexing process creates a `.saltdocs-search.db` SQLite database within the `output_dir` to store the FTS5 table, ensuring locality and speed.
+This indexing process creates a `.wikigen-search.db` SQLite database within the `output_dir` to store the FTS5 table, ensuring locality and speed.
 
 #### Search Scope and `search_docs` Tool
 
@@ -625,7 +625,7 @@ sequenceDiagram
 
     UserAI->>MCPServer: Request `search_docs("query")`
     MCPServer->>SearchIndex: `perform_search("query")`
-    SearchIndex->>FileSys: Check/Load search DB (`.saltdocs-search.db`)
+    SearchIndex->>FileSys: Check/Load search DB (`.wikigen-search.db`)
     alt If index is outdated or missing
         SearchIndex->>FileSys: Scan `output_dir` for Markdown files
         FileSys-->>SearchIndex: Return file paths and content
@@ -646,13 +646,13 @@ The core logic for indexing and searching resides within a `search_index.py` mod
 The system first ensures that a search database exists and that the documentation directory is indexed. If not, it creates the SQLite database and an FTS5 table, then populates it.
 
 ```python
-# Simplified excerpt from salt_docs/search_index.py
+# Simplified excerpt from wikigen/search_index.py
 import sqlite3
 import os
 
 def ensure_index_ready(docs_dir: str):
     """Ensures the search database and FTS5 table are initialized and up-to-date."""
-    db_path = os.path.join(docs_dir, ".saltdocs-search.db")
+    db_path = os.path.join(docs_dir, ".wikigen-search.db")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -690,10 +690,10 @@ def ensure_index_ready(docs_dir: str):
 Once the index is ready, performing a search is a straightforward FTS5 query.
 
 ```python
-# Simplified excerpt from salt_docs/search_index.py
+# Simplified excerpt from wikigen/search_index.py
 def search_documentation(docs_dir: str, query: str) -> list[dict]:
     """Performs a full-text search on the indexed documentation."""
-    db_path = os.path.join(docs_dir, ".saltdocs-search.db")
+    db_path = os.path.join(docs_dir, ".wikigen-search.db")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -740,15 +740,15 @@ The AI would then translate this into an MCP call:
   }
 }
 ```
-The underlying `search_documentation` function in `salt-docs` would execute, returning relevant Markdown files and snippets.
+The underlying `search_documentation` function in `wikigen` would execute, returning relevant Markdown files and snippets.
 
 #### 2. Manually Indexing Directories
 
-While indexing often happens automatically, you can trigger a manual re-indexing of a directory if needed, for instance, after a large batch of new documentation is added outside of a `salt-docs` generation run. The `index_directories` MCP tool can be used for this.
+While indexing often happens automatically, you can trigger a manual re-indexing of a directory if needed, for instance, after a large batch of new documentation is added outside of a `wikigen` generation run. The `index_directories` MCP tool can be used for this.
 
 ```bash
 # This is how the MCP Server might call it internally or if exposed as a CLI command
-salt-docs mcp --tool index_directories --args '{"directory": "/Users/user/Documents/Salt Docs/my-project"}'
+wikigen mcp --tool index_directories --args '{"directory": "/Users/user/Documents/WikiGen/my-project"}'
 ```
 This command would ensure the specified directory's documentation is fully indexed and ready for fast searching.
 
@@ -769,19 +769,19 @@ This component ensures that the effort put into generating detailed documentatio
 
 ## Component 4: MCP Server & AI Integration
 
-Building directly on the structured and searchable documentation provided by the [Fast Documentation Search](03_fast_documentation_search_.md) component, the **MCP Server & AI Integration** is the crucial bridge that connects your meticulously generated `salt-docs` context to the power of modern AI coding assistants. In an era where AI is becoming an indispensable part of the development workflow, enabling these assistants to understand and reference project-specific nuances is paramount.
+Building directly on the structured and searchable documentation provided by the [Fast Documentation Search](03_fast_documentation_search_.md) component, the **MCP Server & AI Integration** is the crucial bridge that connects your meticulously generated `wikigen` context to the power of modern AI coding assistants. In an era where AI is becoming an indispensable part of the development workflow, enabling these assistants to understand and reference project-specific nuances is paramount.
 
 ### Core Responsibilities
 
-The primary goal of the MCP Server is to make the `salt-docs` knowledge base directly queryable by AI coding assistants running in the engineer's local environment. It addresses the common problem where AI, despite its capabilities, often lacks specific, up-to-date project context, leading to generic or inaccurate suggestions.
+The primary goal of the MCP Server is to make the `wikigen` knowledge base directly queryable by AI coding assistants running in the engineer's local environment. It addresses the common problem where AI, despite its capabilities, often lacks specific, up-to-date project context, leading to generic or inaccurate suggestions.
 
 Its core responsibilities include:
 
 *   **Local AI Integration**: Providing a local server endpoint that adheres to the Model Context Protocol (MCP), enabling seamless communication with AI assistants like Cursor, Continue, and Claude Desktop.
-*   **Tool Exposure**: Exposing `salt-docs`'s documentation management capabilities as a defined set of AI tools, including `list_docs`, `get_docs`, `search_docs`, and `index_directories`.
+*   **Tool Exposure**: Exposing `wikigen`'s documentation management capabilities as a defined set of AI tools, including `list_docs`, `get_docs`, `search_docs`, and `index_directories`.
 *   **Contextual Querying**: Allowing AI assistants to query the generated documentation and retrieve specific project context, abstractions, and code explanations.
 *   **Enhanced AI Accuracy**: Significantly improving the relevance and accuracy of AI-generated responses by providing direct access to the project's internal documentation.
-*   **Privacy Assurance**: Ensuring all interactions remain local to the engineer's machine, with no documentation or codebase context being transmitted externally via the `salt-docs` server.
+*   **Privacy Assurance**: Ensuring all interactions remain local to the engineer's machine, with no documentation or codebase context being transmitted externally via the `wikigen` server.
 
 ### Key Concepts
 
@@ -789,18 +789,18 @@ The integration relies on the Model Context Protocol and a defined set of tools 
 
 #### Model Context Protocol (MCP)
 
-The **Model Context Protocol (MCP)** is a standardized way for local AI coding assistants to interact with the user's development environment. It defines a communication layer that allows these assistants to discover and invoke "tools" or "capabilities" exposed by local services. By implementing an MCP server, `salt-docs` transforms its documentation features into actionable functions that AI assistants can call to retrieve information. This is highlighted as a major feature addition in `CHANGELOG.md` version `0.1.7`.
+The **Model Context Protocol (MCP)** is a standardized way for local AI coding assistants to interact with the user's development environment. It defines a communication layer that allows these assistants to discover and invoke "tools" or "capabilities" exposed by local services. By implementing an MCP server, `wikigen` transforms its documentation features into actionable functions that AI assistants can call to retrieve information. This is highlighted as a major feature addition in `CHANGELOG.md` version `0.1.7`.
 
 #### Local-First Architecture
 
-A fundamental principle of `salt-docs` is its **local-first architecture**. The MCP server runs directly on the engineer's machine, alongside their IDE and AI assistant. This ensures that:
+A fundamental principle of `wikigen` is its **local-first architecture**. The MCP server runs directly on the engineer's machine, alongside their IDE and AI assistant. This ensures that:
 *   **Data Privacy**: All project documentation and code context remain entirely local, never leaving the machine.
 *   **Speed**: Interactions between the AI assistant and the documentation server are fast, without network latency.
 *   **Security**: No sensitive project data is transmitted to external servers, enhancing the overall security posture.
 
 #### Defined Set of Tools
 
-The `salt-docs` MCP server exposes four primary tools that AI assistants can leverage:
+The `wikigen` MCP server exposes four primary tools that AI assistants can leverage:
 
 *   `list_docs`: Allows the AI to enumerate all generated documentation files within the configured output directory. This helps the AI understand the scope of available documentation.
 *   `get_docs`: Retrieves the full content of a specific documentation file, identified by its resource name or absolute file path. This is crucial for the AI to "read" relevant documents.
@@ -809,11 +809,11 @@ The `salt-docs` MCP server exposes four primary tools that AI assistants can lev
 
 #### AI Assistant Integration
 
-Modern AI assistants like Cursor, Continue, and Claude Desktop provide mechanisms to configure local MCP servers. By adding `salt-docs` as an MCP server, these assistants automatically discover and integrate the `list_docs`, `get_docs`, `search_docs`, and `index_directories` tools into their capabilities. This allows engineers to naturally ask questions like "How does the `Local Configuration Management` component work?" or "Search the docs for API key handling," and the AI can use the `salt-docs` tools to provide highly accurate, project-specific answers.
+Modern AI assistants like Cursor, Continue, and Claude Desktop provide mechanisms to configure local MCP servers. By adding `wikigen` as an MCP server, these assistants automatically discover and integrate the `list_docs`, `get_docs`, `search_docs`, and `index_directories` tools into their capabilities. This allows engineers to naturally ask questions like "How does the `Local Configuration Management` component work?" or "Search the docs for API key handling," and the AI can use the `wikigen` tools to provide highly accurate, project-specific answers.
 
 ### Internal Implementation
 
-The MCP Server operates as a long-running process that listens for tool call requests from AI clients via standard input/output (stdio). It then dispatches these requests to the appropriate `salt-docs` internal functions.
+The MCP Server operates as a long-running process that listens for tool call requests from AI clients via standard input/output (stdio). It then dispatches these requests to the appropriate `wikigen` internal functions.
 
 #### Workflow Overview
 
@@ -838,15 +838,15 @@ sequenceDiagram
 
 #### Code Walkthrough
 
-The `salt-docs mcp` command initiates the MCP server. This server enters a loop, processing incoming JSON messages (tool calls) from the AI client and responding with results.
+The `wikigen mcp` command initiates the MCP server. This server enters a loop, processing incoming JSON messages (tool calls) from the AI client and responding with results.
 
 ##### 1. MCP Server Entry Point
 
-The `mcp` subcommand in `salt-docs` launches the server in stdio mode.
+The `mcp` subcommand in `wikigen` launches the server in stdio mode.
 
 ```python
-# Simplified excerpt from salt_docs/cli.py
-from salt_docs.mcp_server import run_mcp_server
+# Simplified excerpt from wikigen/cli.py
+from wikigen.mcp_server import run_mcp_server
 
 def main():
     # ... argument parsing ...
@@ -854,18 +854,18 @@ def main():
         run_mcp_server()
     # ... other commands ...
 ```
-*Explanation*: When `salt-docs mcp` is executed, the `run_mcp_server` function is called. This function encapsulates the logic for listening to stdio, parsing MCP requests, and dispatching them.
+*Explanation*: When `wikigen mcp` is executed, the `run_mcp_server` function is called. This function encapsulates the logic for listening to stdio, parsing MCP requests, and dispatching them.
 
 ##### 2. MCP Server Loop and Tool Dispatch
 
-The `run_mcp_server` function typically contains a loop that reads messages, identifies the requested tool, and invokes the corresponding `salt-docs` internal function.
+The `run_mcp_server` function typically contains a loop that reads messages, identifies the requested tool, and invokes the corresponding `wikigen` internal function.
 
 ```python
-# Simplified excerpt from salt_docs/mcp_server.py
+# Simplified excerpt from wikigen/mcp_server.py
 import json
-from salt_docs.output_resources import list_documentation_files, get_document_content
-from salt_docs.search_index import search_documentation, ensure_index_ready
-from salt_docs.config import get_config_path, load_config
+from wikigen.output_resources import list_documentation_files, get_document_content
+from wikigen.search_index import search_documentation, ensure_index_ready
+from wikigen.config import get_config_path, load_config
 
 def run_mcp_server():
     config_path = get_config_path()
@@ -901,7 +901,7 @@ def run_mcp_server():
 The `output_resources.py` module (renamed from `doc_discovery.py` in `CHANGELOG.md` version `0.1.7`) provides functions to interact with the generated documentation files.
 
 ```python
-# Simplified excerpt from salt_docs/output_resources.py
+# Simplified excerpt from wikigen/output_resources.py
 import os
 
 def list_documentation_files(docs_dir: str) -> list[str]:
@@ -931,31 +931,31 @@ def get_document_content(docs_dir: str, resource_name: str = None, file_path: st
 
 ### Concrete Usage Examples
 
-Engineers integrate with the MCP Server by configuring their AI assistant to use `salt-docs`.
+Engineers integrate with the MCP Server by configuring their AI assistant to use `wikigen`.
 
 #### 1. Setting up MCP with AI Assistants (e.g., Cursor)
 
-As detailed in the `README.md`, setting up `salt-docs` as an MCP server is straightforward.
+As detailed in the `README.md`, setting up `wikigen` as an MCP server is straightforward.
 
-First, ensure `salt-docs` is installed and `salt-docs init` has been run, and you've generated some documentation (e.g., `salt-docs --dir /path/to/my/project`).
+First, ensure `wikigen` is installed and `wikigen init` has been run, and you've generated some documentation (e.g., `wikigen --dir /path/to/my/project`).
 
 Then, configure your AI assistant. For Cursor, this involves modifying `~/.cursor/mcp.json` (or `%APPDATA%\Cursor\mcp.json` on Windows):
 
 ```json
 {
   "mcpServers": {
-    "salt-docs": {
-      "command": "salt-docs",
+    "wikigen": {
+      "command": "wikigen",
       "args": ["mcp"]
     }
   }
 }
 ```
-After restarting Cursor, the AI will automatically detect and load the `salt-docs` tools. Similar configurations apply to Claude Desktop (see `README.md` for paths).
+After restarting Cursor, the AI will automatically detect and load the `wikigen` tools. Similar configurations apply to Claude Desktop (see `README.md` for paths).
 
 #### 2. Interacting with AI for Documentation
 
-Once configured, engineers can use natural language queries within their AI assistant, and the AI will invoke the appropriate `salt-docs` MCP tool.
+Once configured, engineers can use natural language queries within their AI assistant, and the AI will invoke the appropriate `wikigen` MCP tool.
 
 **Example 1: Listing Available Documentation**
 
@@ -968,7 +968,7 @@ Once configured, engineers can use natural language queries within their AI assi
       "tool_args": {}
     }
     ```
-*   **`salt-docs` Response**: A list of file paths (e.g., `["/path/to/docs/01_local_config.md", "/path/to/docs/my_component.md"]`).
+*   **`wikigen` Response**: A list of file paths (e.g., `["/path/to/docs/01_local_config.md", "/path/to/docs/my_component.md"]`).
 
 **Example 2: Searching for Specific Context**
 
@@ -983,7 +983,7 @@ Once configured, engineers can use natural language queries within their AI assi
       }
     }
     ```
-*   **`salt-docs` Response**: Relevant snippets from `01_local_configuration_management_.md` (powered by [Fast Documentation Search](03_fast_documentation_search_.md)).
+*   **`wikigen` Response**: Relevant snippets from `01_local_configuration_management_.md` (powered by [Fast Documentation Search](03_fast_documentation_search_.md)).
 
 **Example 3: Retrieving Full Document Content**
 
@@ -998,19 +998,19 @@ Once configured, engineers can use natural language queries within their AI assi
       }
     }
     ```
-*   **`salt-docs` Response**: The full Markdown content of `02_documentation_generation_pipeline_.md`.
+*   **`wikigen` Response**: The full Markdown content of `02_documentation_generation_pipeline_.md`.
 
 ### Key Takeaways
 
 The **MCP Server & AI Integration** component is transformative for developers, enabling a new level of productivity and context awareness.
 
-*   It acts as the **bridge between `salt-docs` and AI coding assistants**, leveraging the Model Context Protocol.
+*   It acts as the **bridge between `wikigen` and AI coding assistants**, leveraging the Model Context Protocol.
 *   The server operates **locally**, ensuring absolute **privacy and fast interactions**.
 *   It exposes a powerful set of **`list_docs`, `get_docs`, `search_docs`, and `index_directories` tools** for AI consumption.
 *   By providing AI assistants with direct access to project-specific context, it dramatically **enhances the relevance and accuracy of AI-generated responses**.
 
-This component solidifies `salt-docs`'s position as an essential tool for engineers seeking comprehensive, intelligent, and privacy-preserving documentation within their development workflow.
+This component solidifies `wikigen`'s position as an essential tool for engineers seeking comprehensive, intelligent, and privacy-preserving documentation within their development workflow.
 
 ---
 
-Wiki created by [SALT](https://usesalt.co)
+Wiki created by [WIKIGEN](https://usesalt.co)

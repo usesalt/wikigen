@@ -1,4 +1,4 @@
-"""MCP (Model Context Protocol) server for salt-docs."""
+"""MCP (Model Context Protocol) server for wikigen."""
 
 
 # Lazy import to avoid requiring mcp package at module load time
