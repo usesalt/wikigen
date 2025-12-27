@@ -1,13 +1,11 @@
-![WikiGen](assets/wikigen.jpg)
-
+![WikiGen](assets/wikigen.png)
 
 ## WIKIGEN
 
 [![PyPI](https://img.shields.io/badge/pypi-v0.2.4-blue)](https://pypi.org/project/wikigen/) [![Python](https://img.shields.io/badge/python-3.12+-blue)](https://www.python.org/) [![Downloads](https://img.shields.io/badge/downloads-3k+-brightgreen)](https://pypi.org/project/wikigen/) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![GitHub](https://img.shields.io/badge/github-usesalt%2Fwikigen-red)](https://github.com/usesalt/wikigen)
 
 
-
-**WikiGen** is a compact, human-readable documentation generator for codebases that minimizes tokens and makes structure easy for models to follow.  
+**WikiGen** (Previously named "salt-docs") is a compact, human-readable documentation generator for codebases that minimizes tokens and makes structure easy for models to follow.  
 It's intended for **LLM input** as a drop-in, lossless representation of your existing codebase.
 
 
