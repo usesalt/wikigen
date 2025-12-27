@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from wikigen.mcp.search_index import FileIndexer
 from wikigen.mcp.chunking import chunk_markdown
-from wikigen.mcp.embeddings import get_embedding, get_embeddings_batch
+from wikigen.mcp.embeddings import get_embeddings_batch
 
 
 def create_test_documents(tmp_path: Path):
